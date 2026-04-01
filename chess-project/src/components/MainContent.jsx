@@ -1,4 +1,7 @@
 import React from 'react'
+import Lobby from './Lobby'
+import Profile from './Profile'
+import Friends from './Friends'
 function LobbyView(){
     return <div className='lobby'>
         <h1>Quick Pair</h1>
@@ -26,13 +29,15 @@ function ArchivesView(){
 const MainContent = ({activeTab}) => {
   switch (activeTab){
     case 'lobby':
-        return <LobbyView/>
-    case 'tournaments':
-        return <TournamentView/>
+        return <Lobby/>
+    // case 'tournaments':
+    //     return <TournamentView/>
     case 'friends':
-        return <FriendsView/>
+        return <Friends/>
     case 'archives':
         return <ArchivesView/>
+    case 'profile':
+        return <Profile/>
   }
 }
 

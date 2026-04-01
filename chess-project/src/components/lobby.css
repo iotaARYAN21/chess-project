@@ -1,0 +1,28 @@
+/* .lobby{ */
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+/* } */
+.lobby-intro{
+    margin: 1.3rem;
+}
+.lobby-intro > *{
+    margin: 0.5rem;
+}
+.games{
+    display: flex;
+    
+}
+.game-card{
+    height: 10rem;
+    width: 15rem;
+    border: 2px solid black;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+}

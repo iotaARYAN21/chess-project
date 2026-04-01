@@ -1,0 +1,23 @@
+.sidebar{
+    width: 20%;
+    height: 100vh;
+    /* border-right: 5px solid black; */
+}
+.side-profile{
+    font-family: monospace;
+    font-size: 1.5rem;
+    margin-left: 3rem;
+}
+.side-nav{
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    /* justify-content: center; */
+    /* align-items: center; */
+}
+.side-btn{
+    width: 10rem;
+    height: 3rem;
+    margin: 1rem;
+    border-radius: 10px;
+}
