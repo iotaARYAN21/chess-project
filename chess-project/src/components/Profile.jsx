@@ -10,7 +10,9 @@ const Profile = () => {
     <div className="profile-container">
         {/* image rating graph username , email bio, followers , friends,id */}
         <img src="" alt="Profile pic" className="profile-image" />
-        <div className="rating-graph">Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat beatae natus amet voluptatem repellendus velit sit laboriosam aperiam pariatur! Ut minima suscipit, at, velit aperiam distinctio architecto dignissimos dicta omnis aliquid delectus praesentium reprehenderit repudiandae ipsa repellendus voluptas iure commodi a. Eaque at ipsum dignissimos dicta cumque tempora atque quia!</div>
+        <div className="rating-graph">
+            <h2>Rating Graph</h2>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat beatae natus amet voluptatem repellendus velit sit laboriosam aperiam pariatur! Ut minima suscipit, at, velit aperiam distinctio architecto dignissimos dicta omnis aliquid delectus praesentium reprehenderit repudiandae ipsa repellendus voluptas iure commodi a. Eaque at ipsum dignissimos dicta cumque tempora atque quia!</div>
         
         <div className="player-info">
             <h2>id : 32</h2>
