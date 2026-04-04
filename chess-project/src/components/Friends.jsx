@@ -11,7 +11,7 @@ const Friends = () => {
             <h2>Friends</h2>
             {/* <p>fetch all the available friends and request pending in a list and map throught it and display</p> */}
             {friends.map((item)=>(
-                <div className="friend">
+                <div key={item.id} className="friend">
                     {/* {item.id} {" "} {item.rating} {" "} {item.status}
                      */}
                      <h3>{item.id} </h3>

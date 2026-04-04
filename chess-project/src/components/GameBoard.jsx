@@ -4,7 +4,11 @@ import { Chessboard } from 'react-chessboard';
 import './gameboard.css';
 const GameBoard = () => {
   const [game, setGame] = useState(() => new Chess());
+/*
 
+game_id, white_id (Player 1), black_id (Player 2),
+ moves (the PGN or move array), time_control, and result.
+*/
   const boardOptions = useMemo(() => ({
     id: 'game-board',
     position: game.fen(),

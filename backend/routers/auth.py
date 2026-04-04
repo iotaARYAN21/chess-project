@@ -1,24 +1,47 @@
-from fastapi import FastAPI,Depends,HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-class UserDate(BaseModel):
-    name:str
-    email:str
-    pwd : str
+router = APIRouter(prefix="/auth",tags=["auth"])
 
-class UserResponse(BaseModel):
+class LoginRequest(BaseModel):
+    name:str
     email:str
     pwd:str
 
-app = FastAPI()
+@router.post("/login")
+def login(data:LoginRequest):
+    print(f"Name: {data.name}")
+    print(f"Email: {data.email}")
+    print(f"Pwd: {data.pwd}")
 
-def get_db():
-    db = Session()  
-    try:
-        yield db
-    finally:
-        db.close()
+    return {
+        "access_token": "fake-token-123",
+        "token_type": "bearer"
+    }
+
+
+
+# from fastapi import FastAPI,Depends,HTTPException
+# from sqlalchemy.orm import Session
+# from pydantic import BaseModel
+
+# class UserDate(BaseModel):
+#     name:str
+#     email:str
+#     pwd : str
+
+# class UserResponse(BaseModel):
+#     email:str
+#     pwd:str
+
+# app = FastAPI()
+
+# def get_db():
+#     db = Session()  
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
 # @app.post("/signup",response_model=UserResponse)
 # def signup(user_data:UserCreate)

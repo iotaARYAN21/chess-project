@@ -1,20 +1,47 @@
 import React from 'react'
 import Login from './components/Login'
-import {Routes,Route} from 'react-router-dom'
+import {Routes,Route, Navigate} from 'react-router-dom'
 import SignUp from './components/SignUp'
 import Dashboard from './components/Dashboard'
 import Lobby from './components/Lobby'
 import GameBoard from './components/GameBoard'
 // import Profile
+function ProtectedRoute({children}){
+  const token = localStorage.getItem('token');
+  if(!token){
+    return <Navigate to="/"/>
+  }
+  return children;
+}
 const App = () => {
   return (
-    // <Routes>
-    //   <Route path='/' element={<Login/>}></Route>
-    //   <Route path='/signup' element={<SignUp/>}/>
-    // </Routes>
-    // <Dashboard/>
-    <GameBoard/>
-    // <Lobby/>
+    <Routes>
+      <Route path='/' element={<Login/>}></Route>
+      <Route path='/signup' element={<SignUp/>}/>
+    
+    <Route path='/dashboard' element={
+      <ProtectedRoute>
+        <Dashboard/>
+      </ProtectedRoute>
+    }>
+    </Route>
+    <Route
+    path='/lobby'
+    element={
+      <ProtectedRoute>
+        <Lobby/>
+      </ProtectedRoute>
+    }
+    ></Route>
+    <Route
+    path='/gameboard'
+    element={
+      <ProtectedRoute>
+        <GameBoard/>
+      </ProtectedRoute>
+    }
+    ></Route>
+    </Routes>
   )
 }
 
