@@ -1,20 +1,14 @@
 .game-layout{
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem ;
 }
 .player-card{
-    height: 8rem;
-    margin: 0 1.5rem;
-}
-.player-card>*{
-    padding: 0.4rem;
+    border: 2px solid black;
 }
 .board-container{
-    display: flex;
-    justify-content: center
-}
-.board{
-    height: 25rem;
-    width: 25rem;
+    align-self: center;
 }
