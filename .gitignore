@@ -4,10 +4,12 @@ frontend/build/
 .env
 
 # Python (Backend)
+# / (at the end implies directories)
 __pycache__/
 *.pyc
 env/
 venv/
+.venv/
 
 # OS generated files
 .DS_Store
