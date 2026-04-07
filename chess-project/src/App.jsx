@@ -15,33 +15,34 @@ function ProtectedRoute({children}){
 }
 const App = () => {
   return (
-    <Routes>
-      <Route path='/' element={<Login/>}></Route>
-      <Route path='/signup' element={<SignUp/>}/>
+    <Dashboard/>
+    // <Routes>
+    //   <Route path='/' element={<Login/>}></Route>
+    //   <Route path='/signup' element={<SignUp/>}/>
     
-    <Route path='/dashboard' element={
-      <ProtectedRoute>
-        <Dashboard/>
-      </ProtectedRoute>
-    }>
-    </Route>
-    <Route
-    path='/lobby'
-    element={
-      <ProtectedRoute>
-        <Lobby/>
-      </ProtectedRoute>
-    }
-    ></Route>
-    <Route
-    path='/gameboard'
-    element={
-      <ProtectedRoute>
-        <GameBoard/>
-      </ProtectedRoute>
-    }
-    ></Route>
-    </Routes>
+    // <Route path='/dashboard' element={
+    //   <ProtectedRoute>
+    //     <Dashboard/>
+    //   </ProtectedRoute>
+    // }>
+    // </Route>
+    // <Route
+    // path='/lobby'
+    // element={
+    //   <ProtectedRoute>
+    //     <Lobby/>
+    //   </ProtectedRoute>
+    // }
+    // ></Route>
+    // <Route
+    // path='/gameboard'
+    // element={
+    //   <ProtectedRoute>
+    //     <GameBoard/>
+    //   </ProtectedRoute>
+    // }
+    // ></Route>
+    // </Routes>
   )
 }
 
