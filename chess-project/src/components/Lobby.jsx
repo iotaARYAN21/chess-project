@@ -21,6 +21,9 @@ const Lobby = () => {
     const handleGameMode = async(game_id,game_time)=>{
         setLoading(true);
         try{
+            /*
+            Creates a new game record in database. Initializes the starting FEN, sets clocks for both sides (e.g., 600 seconds each), and returns a game_id.
+            */
             const response = await fetch('http://localhost:8000/api/game/start',{
                 method:'POST',
                 headers:{
@@ -34,7 +37,7 @@ const Lobby = () => {
                 throw new Error('Failed to start game');
             }
             const data = await response.json();
-            if(data.game_id){
+            if(data.game_id){ // game_id is the id assigned to this particular match by the backend , this is used to connect the frontend websocket with the server for live updates and validation from the backend
                 navigate(`/game/${data.game_id}`);
             }
             else{
