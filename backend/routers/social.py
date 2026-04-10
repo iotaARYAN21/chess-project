@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+import uuid
 
 from db.queries import (
     get_account_by_username,
@@ -10,6 +11,7 @@ from db.queries import (
     get_friends,
     follow_user,
     unfollow_user,
+    get_friend_request_by_id
 )
 
 router = APIRouter(prefix="/social", tags=["social"])
@@ -58,11 +60,21 @@ async def get_requests():
 @router.post("/friend-request/{req_id}/accept")
 async def accept_request(req_id: str):
     user = get_current_user()
+    req_uuid = uuid.UUID(req_id) 
 
+    req = await get_friend_request_by_id(req_uuid)
+
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    if req["to_username"] != user:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Update status
     await respond_to_friend_request(req_id, "accepted")
 
-    # IMPORTANT: queries.py does NOT auto-create friendship → you must add it
-    # You should ideally fetch request row to get user IDs, but skipping for now
+    # Create friendship
+    await add_friendship(req["from_user"], req["to_user"])
 
     return {"message": "Accepted"}
 
