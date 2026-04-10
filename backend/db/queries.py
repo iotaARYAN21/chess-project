@@ -8,7 +8,8 @@ automatically, so callers never have to manage connections.
 import uuid
 from datetime import datetime
 from typing import Optional
-from database import get_pool
+from .database import get_pool
+import asyncpg
 
 
 # ===========================================================================
