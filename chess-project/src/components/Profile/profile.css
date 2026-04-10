@@ -1,0 +1,35 @@
+.profile-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.top-section {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.player-info {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.stats {
+    margin-top: 10px;
+    display: flex;
+    gap: 20px;
+}
+
+.rating-graph {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}

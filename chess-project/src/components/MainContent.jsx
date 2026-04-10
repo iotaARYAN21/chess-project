@@ -1,6 +1,6 @@
 import React from 'react'
 import Lobby from './Lobby'
-import Profile from './Profile'
+import Profile from './Profile/Profile'
 import Friends from './Friends'
 function LobbyView(){
     return <div className='lobby'>
