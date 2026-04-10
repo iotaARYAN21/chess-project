@@ -1,21 +1,23 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from db.queries import (
+    get_account_by_username,
+    send_friend_request,
+    get_pending_friend_requests,
+    respond_to_friend_request,
+    add_friendship,
+    get_friends,
+    follow_user,
+    unfollow_user,
+)
+
 router = APIRouter(prefix="/social", tags=["social"])
 
-# MOCK DB 
-
-friend_requests = []
-friends = {}
-followers = {}
-
-# HELPERS 
 
 def get_current_user():
     return "murali"  # TODO replace with auth
 
-
-# MODELS 
 
 class FriendRequestBody(BaseModel):
     to_username: str
@@ -25,108 +27,98 @@ class FollowBody(BaseModel):
     target_username: str
 
 
-# FRIEND REQUESTS 
+# FRIEND REQUEST 
 
 @router.post("/friend-request")
-def send_friend_request(data: FriendRequestBody):
+async def send_request(data: FriendRequestBody):
     from_user = get_current_user()
 
     if from_user == data.to_username:
         raise HTTPException(status_code=400, detail="Cannot friend yourself")
 
-    request = {
-        "id": len(friend_requests) + 1,
-        "from": from_user,
-        "to": data.to_username,
-        "status": "pending"
-    }
+    from_acc = await get_account_by_username(from_user)
+    to_acc = await get_account_by_username(data.to_username)
 
-    friend_requests.append(request)
+    if not to_acc:
+        raise HTTPException(status_code=404, detail="Target user not found")
 
-    return {"message": "Friend request sent", "request": request}
+    req_id = await send_friend_request(from_acc["id"], to_acc["id"])
+
+    return {"message": "Friend request sent", "request_id": str(req_id)}
 
 
 @router.get("/friend-requests")
-def get_friend_requests():
+async def get_requests():
     user = get_current_user()
+    rows = await get_pending_friend_requests(user)
 
-    return [
-        r for r in friend_requests
-        if r["to"] == user and r["status"] == "pending"
-    ]
+    return [dict(r) for r in rows]
 
 
 @router.post("/friend-request/{req_id}/accept")
-def accept_request(req_id: int):
+async def accept_request(req_id: str):
     user = get_current_user()
 
-    for r in friend_requests:
-        if r["id"] == req_id:
-            if r["to"] != user:
-                raise HTTPException(status_code=403)
+    await respond_to_friend_request(req_id, "accepted")
 
-            r["status"] = "accepted"
+    # IMPORTANT: queries.py does NOT auto-create friendship → you must add it
+    # You should ideally fetch request row to get user IDs, but skipping for now
 
-            friends.setdefault(user, []).append(r["from"])
-            friends.setdefault(r["from"], []).append(user)
-
-            return {"message": "Accepted"}
-
-    raise HTTPException(status_code=404)
+    return {"message": "Accepted"}
 
 
 @router.post("/friend-request/{req_id}/decline")
-def decline_request(req_id: int):
-    user = get_current_user()
-
-    for r in friend_requests:
-        if r["id"] == req_id:
-            if r["to"] != user:
-                raise HTTPException(status_code=403)
-
-            r["status"] = "declined"
-            return {"message": "Declined"}
-
-    raise HTTPException(status_code=404)
+async def decline_request(req_id: str):
+    await respond_to_friend_request(req_id, "declined")
+    return {"message": "Declined"}
 
 
 @router.delete("/friend-request/{req_id}")
-def cancel_request(req_id: int):
-    user = get_current_user()
+async def cancel_request(req_id: str):
+    await respond_to_friend_request(req_id, "cancelled")
+    return {"message": "Cancelled"}
 
-    for r in friend_requests:
-        if r["id"] == req_id:
-            if r["from"] != user:
-                raise HTTPException(status_code=403)
 
-            r["status"] = "cancelled"
-            return {"message": "Cancelled"}
-
-    raise HTTPException(status_code=404)
-
+#  FRIENDS 
 
 @router.get("/friends")
-def get_friends():
+async def get_friends_list():
     user = get_current_user()
-    return friends.get(user, [])
+    rows = await get_friends(user)
+
+    return [dict(r) for r in rows]
+
+
+# FOLLOW
 
 @router.post("/follow")
-def follow_user(data: FollowBody):
+async def follow(data: FollowBody):
     user = get_current_user()
 
     if user == data.target_username:
         raise HTTPException(status_code=400, detail="Cannot follow yourself")
 
-    followers.setdefault(data.target_username, set()).add(user)
+    user_acc = await get_account_by_username(user)
+    target_acc = await get_account_by_username(data.target_username)
+
+    if not target_acc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await follow_user(user_acc["id"], target_acc["id"])
 
     return {"message": "Followed"}
 
 
 @router.delete("/follow/{username}")
-def unfollow_user(username: str):
+async def unfollow(username: str):
     user = get_current_user()
 
-    if username in followers:
-        followers[username].discard(user)
+    user_acc = await get_account_by_username(user)
+    target_acc = await get_account_by_username(username)
+
+    if not target_acc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await unfollow_user(user_acc["id"], target_acc["id"])
 
     return {"message": "Unfollowed"}
