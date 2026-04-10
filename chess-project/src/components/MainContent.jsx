@@ -1,7 +1,7 @@
 import React from 'react'
 import Lobby from './Lobby'
 import Profile from './Profile/Profile'
-import Friends from './Friends'
+import Friends from './Socials/Friends'
 function LobbyView(){
     return <div className='lobby'>
         <h1>Quick Pair</h1>
