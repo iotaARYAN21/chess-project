@@ -622,6 +622,18 @@ async def remove_friendship(user1_id: uuid.UUID, user2_id: uuid.UUID) -> None:
 
 async def send_friend_request(from_id: uuid.UUID, to_id: uuid.UUID) -> uuid.UUID:
     async with get_pool().acquire() as conn:
+
+        existing = await conn.fetchrow(
+            """
+            SELECT 1 FROM friend_request
+            WHERE from_user = $1 AND to_user = $2 AND status = 'pending'
+            """,
+            from_id, to_id
+        )
+
+        if existing:
+            raise ValueError("Request already sent")
+
         return await conn.fetchval(
             """
             INSERT INTO friend_request (from_user, to_user)
@@ -630,7 +642,28 @@ async def send_friend_request(from_id: uuid.UUID, to_id: uuid.UUID) -> uuid.UUID
             """,
             from_id, to_id,
         )
-
+    
+async def get_friend_request_by_id(request_id: uuid.UUID,) -> Optional[asyncpg.Record]:
+    """
+    Fetch a friend request by its UUID.
+    Includes both user IDs and usernames for downstream use.
+    """
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT fr.id,
+                   fr.from_user,
+                   fr.to_user,
+                   fr.status,
+                   a_from.username AS from_username,
+                   a_to.username   AS to_username
+            FROM   friend_request fr
+            JOIN   account a_from ON a_from.id = fr.from_user
+            JOIN   account a_to   ON a_to.id   = fr.to_user
+            WHERE  fr.id = $1
+            """,
+            request_id,
+        )
 
 async def get_pending_friend_requests(username: str) -> list:
     """Calls stored function GET_PENDING_FRIEND_REQUESTS."""
