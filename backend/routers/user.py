@@ -2,86 +2,84 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
 
+from db.queries import (
+    get_user_profile,
+    update_user_profile,
+    get_user_stats_by_mode,
+    get_matches_by_game_mode,
+)
+
 router = APIRouter(prefix="/users", tags=["users"])
 
-# MODELS 
 
 class ProfileUpdate(BaseModel):
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
 
 
-# Replace with actual DB calls later
-
-fake_users = {
-    "murali": {
-        "bio": "Chess enthusiast",
-        "avatar_url": "http://example.com/avatar.png",
-        "followers": 10,
-        "friends": 5
-    }
-}
-
-# HELPERS
-
 def get_current_user():
-    # TODO: replace with real auth later
-    return "murali"
+    return "murali"  # TODO replace with auth
 
 
-# ENDPOINTS
+# PROFILE
 
 @router.get("/{username}")
-def get_user_profile(username: str):
-    user = fake_users.get(username)
+async def get_user_profile_route(username: str):
+    user = await get_user_profile(username)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return user
+    return dict(user)
 
 
 @router.put("/{username}/profile")
-def update_profile(username: str, data: ProfileUpdate):
+async def update_profile(username: str, data: ProfileUpdate):
     current_user = get_current_user()
 
     if current_user != username:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    user = fake_users.get(username)
-    if not user:
+    try:
+        await update_user_profile(
+            username,
+            bio=data.bio,
+            avatar_url=data.avatar_url
+        )
+    except ValueError:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if data.bio is not None:
-        user["bio"] = data.bio
-    if data.avatar_url is not None:
-        user["avatar_url"] = data.avatar_url
+    return {"message": "Profile updated"}
 
-    return {"message": "Profile updated", "data": user}
 
+# STATS 
 
 @router.get("/{username}/stats")
-def get_user_stats(username: str):
-    # TODO: Replace with DB function call: GET_USER_STATS_BY_MODE
-    return {
-        "bullet": {"elo": 1200, "wins": 10, "losses": 5, "draws": 2},
-        "blitz": {"elo": 1300, "wins": 20, "losses": 10, "draws": 3},
-        "rapid": {"elo": 1400, "wins": 15, "losses": 8, "draws": 4},
-        "classical": {"elo": 1500, "wins": 5, "losses": 2, "draws": 1},
-    }
+async def get_user_stats(username: str):
+    rows = await get_user_stats_by_mode(username)
 
+    return [
+        {
+            "game_mode": r["game_mode"],
+            "elo": r["elo"],
+            "wins": r["n_wins"],
+            "losses": r["n_losses"],
+            "draws": r["n_draws"],
+        }
+        for r in rows
+    ]
+
+
+# MATCHES
 
 @router.get("/{username}/matches")
-def get_user_matches(
+async def get_user_matches(
     username: str,
     game_mode: Optional[str] = Query(None)
 ):
-    # TODO: Replace with DB function call: GET_MATCHES_BY_GAME_MODE
+    if not game_mode:
+        raise HTTPException(status_code=400, detail="game_mode required")
 
-    return {
-        "username": username,
-        "game_mode": game_mode,
-        "matches": [
-            {"id": 1, "opponent": "john", "result": "win"},
-            {"id": 2, "opponent": "doe", "result": "loss"}
-        ]
-    }
+    rows = await get_matches_by_game_mode(username, game_mode)
+
+    return [dict(r) for r in rows]
