@@ -76,6 +76,21 @@ const Friends = () => {
     setSearchUser('')
   }
 
+  const handleRemoveFriend = async (username) => {
+  const confirmDelete = window.confirm(`Remove ${username} from friends?`)
+  if (!confirmDelete) return
+
+  const res = await fetch(`http://localhost:8000/social/friends/${username}`, {
+    method: "DELETE"
+  })
+
+  if (res.ok) {
+    setFriends(prev => prev.filter(f => f.username !== username))
+  } else {
+    alert("Failed to remove friend")
+  }
+}
+
   if (loading) return <h2>Loading...</h2>
   if (error) return <h2 style={{ color: 'red' }}>{error}</h2>
 
@@ -113,6 +128,13 @@ const Friends = () => {
               <div key={index} className="friend-card">
                 <h3>{f.username}</h3>
                 <p>{f.bio || "No bio"}</p>
+
+                <button 
+                  className="remove-btn"
+                  onClick={() => handleRemoveFriend(f.username)}
+                >
+                  Remove
+                </button>
               </div>
             ))}
           </div>
