@@ -666,10 +666,20 @@ async def get_friend_request_by_id(request_id: uuid.UUID,) -> Optional[asyncpg.R
         )
 
 async def get_pending_friend_requests(username: str) -> list:
-    """Calls stored function GET_PENDING_FRIEND_REQUESTS."""
     async with get_pool().acquire() as conn:
         return await conn.fetch(
-            "SELECT * FROM get_pending_friend_requests($1)", username
+            """
+            SELECT fr.id,
+                   fr.status,
+                   a_from.username AS from_username
+            FROM friend_request fr
+            JOIN account a_to   ON a_to.id = fr.to_user
+            JOIN account a_from ON a_from.id = fr.from_user
+            WHERE a_to.username = $1
+              AND fr.status = 'pending'
+            ORDER BY fr.id DESC
+            """,
+            username,
         )
 
 

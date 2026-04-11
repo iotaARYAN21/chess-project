@@ -129,12 +129,23 @@ const Friends = () => {
 
         {requests.map((r) => (
           <div key={r.id} className="request-card">
-            <span>{r.from_username}</span>
+            
+            <div className="request-info">
+              <div className="avatar">
+                {r.from_username?.charAt(0).toUpperCase()}
+              </div>
+
+              <div>
+                <h4>{r.from_username || "Unknown User"}</h4>
+                <p>sent you a friend request</p>
+              </div>
+            </div>
 
             <div className="actions">
-              <button className="accept" onClick={() => handleAccept(r.id)}>✔</button>
-              <button className="decline" onClick={() => handleDecline(r.id)}>✖</button>
+              <button className="accept" onClick={() => handleAccept(r.id)}>Accept</button>
+              <button className="decline" onClick={() => handleDecline(r.id)}>Decline</button>
             </div>
+
           </div>
         ))}
 

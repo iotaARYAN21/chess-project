@@ -18,7 +18,7 @@ router = APIRouter(prefix="/social", tags=["social"])
 
 
 def get_current_user():
-    return "murali"  # TODO replace with auth
+    return "simeon"  # TODO replace with auth
 
 
 class FriendRequestBody(BaseModel):
