@@ -7,6 +7,7 @@ const Profile = () => {
   const [stats, setStats] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showPicker, setShowPicker] = useState(false)
 
   useEffect(() => {
     const username = localStorage.getItem('username')
@@ -75,21 +76,25 @@ const Profile = () => {
         <div 
           className="avatar-circle"
           style={{ backgroundColor: profile.avatar_url || "#4CAF50" }}
+          onClick={() => setShowPicker(prev => !prev)}
         >
           {profile.username?.charAt(0).toUpperCase()}
         </div>
-        <div className="avatar-picker">
-          <p>Choose Avatar Color</p>
-
-          {["#4CAF50", "#2196F3", "#FF5722", "#9C27B0", "#FFC107"].map((color) => (
-            <div
-              key={color}
-              className="color-dot"
-              style={{ backgroundColor: color }}
-              onClick={() => updateAvatar(color)}
-            />
-          ))}
-        </div>
+        {showPicker && (
+          <div className="avatar-picker">
+            {["#4CAF50", "#2196F3", "#FF5722", "#9C27B0", "#FFC107"].map((color) => (
+              <div
+                key={color}
+                className="color-dot"
+                style={{ backgroundColor: color }}
+                onClick={() => {
+                  updateAvatar(color)
+                  setShowPicker(false)   
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="player-info">
           <h2>@{profile.username}</h2>
