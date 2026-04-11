@@ -6,39 +6,28 @@ const Friends = () => {
   const [friends, setFriends] = useState([])
   const [requests, setRequests] = useState([])
   const [followers, setFollowers] = useState(0)
+  const [searchUser, setSearchUser] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const username = localStorage.getItem('username')
 
   useEffect(() => {
-    if (!username) {
-      setError("No user logged in")
-      setLoading(false)
-      return
-    }
-
     async function fetchData() {
       try {
-        // 🔹 Friends
-        const fRes = await fetch("http://localhost:8000/social/friends")
-        const fData = await fRes.json()
+        const [fRes, rRes, pRes] = await Promise.all([
+          fetch("http://localhost:8000/social/friends"),
+          fetch("http://localhost:8000/social/friend-requests"),
+          fetch(`http://localhost:8000/users/${username}`)
+        ])
 
-        if (fRes.ok) setFriends(fData)
+        if (fRes.ok) setFriends(await fRes.json())
+        if (rRes.ok) setRequests(await rRes.json())
 
-        // 🔹 Friend Requests
-        const rRes = await fetch("http://localhost:8000/social/friend-requests")
-        const rData = await rRes.json()
-
-        if (rRes.ok) setRequests(rData)
-
-        // 🔹 Followers count (from profile)
-        const pRes = await fetch(`http://localhost:8000/users/${username}`)
         const pData = await pRes.json()
-
         if (pRes.ok) setFollowers(pData.n_followers)
 
-      } catch (err) {
+      } catch {
         setError("Failed to load data")
       } finally {
         setLoading(false)
@@ -46,7 +35,7 @@ const Friends = () => {
     }
 
     fetchData()
-  }, [])
+  }, [username])
 
   // -------- ACTIONS --------
 
@@ -54,31 +43,87 @@ const Friends = () => {
     await fetch(`http://localhost:8000/social/friend-request/${id}/accept`, {
       method: "POST"
     })
-    window.location.reload()
+
+    // remove from requests + optionally refresh friends
+    setRequests(prev => prev.filter(r => r.id !== id))
   }
 
   const handleDecline = async (id) => {
     await fetch(`http://localhost:8000/social/friend-request/${id}/decline`, {
       method: "POST"
     })
-    window.location.reload()
+
+    setRequests(prev => prev.filter(r => r.id !== id))
+  }
+
+  const handleSendRequest = async () => {
+    if (!searchUser) return
+
+    const res = await fetch("http://localhost:8000/social/friend-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to_username: searchUser })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      alert(data.detail || "Failed")
+      return
+    }
+
+    alert("Friend request sent!")
+    setSearchUser('')
   }
 
   if (loading) return <h2>Loading...</h2>
-  if (error) return <h2 style={{color:'red'}}>{error}</h2>
+  if (error) return <h2 style={{ color: 'red' }}>{error}</h2>
 
   return (
     <div className="friends-container">
 
-      {/* -------- FOLLOWERS -------- */}
-      <div className="followers-box">
-        <h2>Followers</h2>
-        <p>{followers}</p>
+      {/* LEFT SIDE */}
+      <div className="left-panel">
+
+        {/* SEARCH + SEND */}
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Enter username..."
+            value={searchUser}
+            onChange={(e) => setSearchUser(e.target.value)}
+          />
+          <button onClick={handleSendRequest}>Send Request</button>
+        </div>
+
+        {/* FOLLOWERS */}
+        <div className="followers-box">
+          <h2>Followers</h2>
+          <p>{followers}</p>
+        </div>
+
+        {/* FRIENDS */}
+        <div className="friends-section">
+          <h2>Your Friends</h2>
+
+          {friends.length === 0 && <p>No friends yet</p>}
+
+          <div className="friends-grid">
+            {friends.map((f, index) => (
+              <div key={index} className="friend-card">
+                <h3>{f.username}</h3>
+                <p>{f.bio || "No bio"}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
 
-      {/* -------- FRIEND REQUESTS -------- */}
-      <div className="requests-section">
-        <h2>Pending Requests</h2>
+      {/* RIGHT SIDE → NOTIFICATIONS */}
+      <div className="right-panel">
+
+        <h2>Notifications</h2>
 
         {requests.length === 0 && <p>No pending requests</p>}
 
@@ -87,27 +132,12 @@ const Friends = () => {
             <span>{r.from_username}</span>
 
             <div className="actions">
-              <button onClick={() => handleAccept(r.id)}>Accept</button>
-              <button onClick={() => handleDecline(r.id)}>Decline</button>
+              <button className="accept" onClick={() => handleAccept(r.id)}>✔</button>
+              <button className="decline" onClick={() => handleDecline(r.id)}>✖</button>
             </div>
           </div>
         ))}
-      </div>
 
-      {/* -------- FRIENDS -------- */}
-      <div className="friends-section">
-        <h2>Your Friends</h2>
-
-        {friends.length === 0 && <p>No friends yet</p>}
-
-        <div className="friends-grid">
-          {friends.map((f, index) => (
-            <div key={index} className="friend-card">
-              <h3>{f.username}</h3>
-              <p>{f.bio || "No bio"}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
     </div>

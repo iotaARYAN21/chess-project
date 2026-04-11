@@ -1,8 +1,38 @@
 .friends-container {
+    display: flex;
+    gap: 20px;
     padding: 20px;
+}
+
+/* LEFT PANEL */
+.left-panel {
+    flex: 3;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 20px;
+}
+
+/* RIGHT PANEL (NOTIFICATIONS) */
+.right-panel {
+    flex: 1;
+    border-left: 2px solid #ddd;
+    padding-left: 15px;
+}
+
+/* SEARCH */
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 8px;
+}
+
+.search-box button {
+    padding: 8px 12px;
+    cursor: pointer;
 }
 
 /* FOLLOWERS */
@@ -11,27 +41,6 @@
     border: 1px solid #ccc;
     border-radius: 10px;
     text-align: center;
-}
-
-/* REQUESTS */
-.requests-section {
-    border: 1px solid #ccc;
-    padding: 15px;
-    border-radius: 10px;
-}
-
-.request-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.actions button {
-    margin-left: 10px;
-    padding: 5px 10px;
-    cursor: pointer;
 }
 
 /* FRIENDS */
@@ -43,14 +52,43 @@
 
 .friends-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
 }
 
 .friend-card {
     padding: 10px;
-    border: 1px solid #ddd;
     border-radius: 10px;
+    background: #f5f5f5;
     text-align: center;
-    background: #f9f9f9;
+}
+
+/* REQUESTS */
+.request-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+/* BUTTONS */
+.actions button {
+    margin-left: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+.accept {
+    background: #4CAF50;
+    color: white;
+}
+
+.decline {
+    background: #f44336;
+    color: white;
 }

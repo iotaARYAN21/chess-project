@@ -71,7 +71,7 @@ async def accept_request(req_id: str):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Update status
-    await respond_to_friend_request(req_id, "accepted")
+    await respond_to_friend_request(req_uuid, "accepted")
 
     # Create friendship
     await add_friendship(req["from_user"], req["to_user"])
@@ -81,13 +81,15 @@ async def accept_request(req_id: str):
 
 @router.post("/friend-request/{req_id}/decline")
 async def decline_request(req_id: str):
-    await respond_to_friend_request(req_id, "declined")
+    req_uuid = uuid.UUID(req_id)
+    await respond_to_friend_request(req_uuid, "declined")
     return {"message": "Declined"}
 
 
 @router.delete("/friend-request/{req_id}")
 async def cancel_request(req_id: str):
-    await respond_to_friend_request(req_id, "cancelled")
+    req_uuid = uuid.UUID(req_id)
+    await respond_to_friend_request(req_uuid, "cancelled")
     return {"message": "Cancelled"}
 
 
