@@ -8,6 +8,7 @@ from db.queries import (
     get_pending_friend_requests,
     respond_to_friend_request,
     add_friendship,
+    remove_friendship,
     get_friends,
     follow_user,
     unfollow_user,
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/social", tags=["social"])
 
 
 def get_current_user():
-    return "simeon"  # TODO replace with auth
+    return "aryan"  # TODO replace with auth
 
 
 class FriendRequestBody(BaseModel):
@@ -102,6 +103,19 @@ async def get_friends_list():
 
     return [dict(r) for r in rows]
 
+@router.delete("/friends/{username}")
+async def remove_friend(username: str):
+    current_user = get_current_user()
+
+    user_acc = await get_account_by_username(current_user)
+    target_acc = await get_account_by_username(username)
+
+    if not target_acc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await remove_friendship(user_acc["id"], target_acc["id"])
+
+    return {"message": "Friend removed"}
 
 # FOLLOW
 
