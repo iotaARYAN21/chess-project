@@ -48,6 +48,22 @@ const Profile = () => {
     fetchData()
   }, [])
 
+  const updateAvatar = async (color) => {
+    const username = localStorage.getItem('username')
+
+    const res = await fetch(`http://localhost:8000/users/${username}/profile`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ avatar_url: color })
+    })
+
+    if (res.ok) {
+      setProfile(prev => ({ ...prev, avatar_url: color }))
+    } else {
+      alert("Failed to update avatar")
+    }
+  }
+
   if (loading) return <h2>Loading...</h2>
   if (error) return <h2 style={{color:'red'}}>{error}</h2>
 
@@ -56,11 +72,24 @@ const Profile = () => {
 
       {/* -------- TOP SECTION -------- */}
       <div className="top-section">
-        <img 
-          src={profile.avatar_url || "https://via.placeholder.com/150"} 
-          alt="Profile" 
-          className="profile-image" 
-        />
+        <div 
+          className="avatar-circle"
+          style={{ backgroundColor: profile.avatar_url || "#4CAF50" }}
+        >
+          {profile.username?.charAt(0).toUpperCase()}
+        </div>
+        <div className="avatar-picker">
+          <p>Choose Avatar Color</p>
+
+          {["#4CAF50", "#2196F3", "#FF5722", "#9C27B0", "#FFC107"].map((color) => (
+            <div
+              key={color}
+              className="color-dot"
+              style={{ backgroundColor: color }}
+              onClick={() => updateAvatar(color)}
+            />
+          ))}
+        </div>
 
         <div className="player-info">
           <h2>@{profile.username}</h2>
