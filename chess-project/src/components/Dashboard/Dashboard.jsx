@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Sidebar from '../Sidebar/Sidebar';
-import MainContent from '../MainContent';
+import MainContent from '../MainContent/MainContent';
 import './dashboard.css'
 const Dashboard = () => {
     const [activeTab,setActiveTab] = useState('lobby');

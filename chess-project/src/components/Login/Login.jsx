@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import './login.css'
-import Dashboard from './Dashboard'
+import Dashboard from '../Dashboard/Dashboard'
 import { Link,useNavigate } from 'react-router-dom'
 const Login = () => {
 

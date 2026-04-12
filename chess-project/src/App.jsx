@@ -1,10 +1,10 @@
 import React from 'react'
-import Login from './components/Login'
+import Login from './components/Login/Login'
 import {Routes,Route, Navigate} from 'react-router-dom'
-import SignUp from './components/SignUp'
-import Dashboard from './components/Dashboard'
-import Lobby from './components/Lobby'
-import GameBoard from './components/GameBoard'
+import SignUp from './components/SignUp/SignUp'
+import Dashboard from './components/Dashboard/Dashboard'
+import Lobby from './components/Lobby/Lobby'
+import GameBoard from './components/GameBoard/GameBoard'
 // import Profile
 function ProtectedRoute({children}){
   const token = localStorage.getItem('token');
