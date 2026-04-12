@@ -40,12 +40,36 @@ const Friends = () => {
   // -------- ACTIONS --------
 
   const handleAccept = async (id) => {
-    await fetch(`http://localhost:8000/social/friend-request/${id}/accept`, {
+    const req = requests.find(r => r.id === id)
+
+    const res = await fetch(`http://localhost:8000/social/friend-request/${id}/accept`, {
       method: "POST"
     })
 
-    // remove from requests + optionally refresh friends
+    if (!res.ok) {
+      alert("Failed to accept request")
+      return
+    }
+
+    // Remove from requests
     setRequests(prev => prev.filter(r => r.id !== id))
+
+    // Fetch full user data
+    if (req) {
+      const userRes = await fetch(`http://localhost:8000/users/${req.from_username}`)
+      
+      if (userRes.ok) {
+        const userData = await userRes.json()
+
+        setFriends(prev => [
+          ...prev,
+          {
+            username: userData.username,
+            bio: userData.bio
+          }
+        ])
+      }
+    }
   }
 
   const handleDecline = async (id) => {
