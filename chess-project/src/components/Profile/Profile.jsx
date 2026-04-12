@@ -101,7 +101,6 @@ const Profile = () => {
           <p>{profile.bio || "No bio yet"}</p>
 
           <div className="stats">
-            <span>Followers: {profile.n_followers}</span>
             <span>Friends: {profile.n_friends}</span>
           </div>
         </div>

@@ -111,11 +111,6 @@ const Friends = () => {
           <button onClick={handleSendRequest}>Send Request</button>
         </div>
 
-        {/* FOLLOWERS */}
-        <div className="followers-box">
-          <h2>Followers</h2>
-          <p>{followers}</p>
-        </div>
 
         {/* FRIENDS */}
         <div className="friends-section">
