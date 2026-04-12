@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,HTTPException
 from pydantic import BaseModel
+from db.queries import get_player_by_email
 
 router = APIRouter(prefix="/auth",tags=["auth"])
 
@@ -9,15 +10,27 @@ class LoginRequest(BaseModel):
     pwd:str
 
 @router.post("/login")
-def login(data:LoginRequest):
-    print(f"Name: {data.name}")
-    print(f"Email: {data.email}")
-    print(f"Pwd: {data.pwd}")
+async def login(data:LoginRequest):
+    player = await get_player_by_email(data.email)
+
+    if not player or player["password_hash"]!=data.pwd:
+        raise HTTPException(status_code=400,detail="Invalid email or password")
 
     return {
-        "access_token": "fake-token-123",
-        "token_type": "bearer"
+        "access_token":"fake-token-123",
+        "token-type":"bearer",
+        "user_id":str(player["id"]),
+        "username":player["username"]
     }
+
+    # print(f"Name: {data.name}")
+    # print(f"Email: {data.email}")
+    # print(f"Pwd: {data.pwd}")
+
+    # return {
+    #     "access_token": "fake-token-123",
+    #     "token_type": "bearer"
+    # }
 
 
 
