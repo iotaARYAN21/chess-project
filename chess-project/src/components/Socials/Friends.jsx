@@ -10,6 +10,11 @@ const Friends = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // 🔥 NEW STATE
+  const [selectedFriend, setSelectedFriend] = useState(null)
+  const [selectedStats, setSelectedStats] = useState([])
+  const [showProfile, setShowProfile] = useState(false)
+
   const username = localStorage.getItem('username')
 
   useEffect(() => {
@@ -37,6 +42,38 @@ const Friends = () => {
     fetchData()
   }, [username])
 
+  // -------- VIEW FRIEND PROFILE --------
+
+  const handleViewFriend = async (friendUsername) => {
+    try {
+      const [profileRes, statsRes] = await Promise.all([
+        fetch(`http://localhost:8000/users/${friendUsername}`),
+        fetch(`http://localhost:8000/users/${friendUsername}/stats`)
+      ])
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json()
+        setSelectedFriend(profileData)
+      }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setSelectedStats(statsData)
+      }
+
+      setShowProfile(true)
+
+    } catch {
+      alert("Failed to load friend profile")
+    }
+  }
+
+  const handleCloseProfile = () => {
+    setShowProfile(false)
+    setSelectedFriend(null)
+    setSelectedStats([])
+  }
+
   // -------- ACTIONS --------
 
   const handleAccept = async (id) => {
@@ -51,10 +88,8 @@ const Friends = () => {
       return
     }
 
-    // Remove from requests
     setRequests(prev => prev.filter(r => r.id !== id))
 
-    // Fetch full user data
     if (req) {
       const userRes = await fetch(`http://localhost:8000/users/${req.from_username}`)
       
@@ -101,19 +136,25 @@ const Friends = () => {
   }
 
   const handleRemoveFriend = async (username) => {
-  const confirmDelete = window.confirm(`Remove ${username} from friends?`)
-  if (!confirmDelete) return
+    const confirmDelete = window.confirm(`Remove ${username} from friends?`)
+    if (!confirmDelete) return
 
-  const res = await fetch(`http://localhost:8000/social/friends/${username}`, {
-    method: "DELETE"
-  })
+    const res = await fetch(`http://localhost:8000/social/friends/${username}`, {
+      method: "DELETE"
+    })
 
-  if (res.ok) {
-    setFriends(prev => prev.filter(f => f.username !== username))
-  } else {
-    alert("Failed to remove friend")
+    if (res.ok) {
+      setFriends(prev => prev.filter(f => f.username !== username))
+
+      // 🔥 If viewing same friend, close panel
+      if (selectedFriend?.username === username) {
+        handleCloseProfile()
+      }
+
+    } else {
+      alert("Failed to remove friend")
+    }
   }
-}
 
   if (loading) return <h2>Loading...</h2>
   if (error) return <h2 style={{ color: 'red' }}>{error}</h2>
@@ -124,7 +165,7 @@ const Friends = () => {
       {/* LEFT SIDE */}
       <div className="left-panel">
 
-        {/* SEARCH + SEND */}
+        {/* SEARCH */}
         <div className="search-box">
           <input
             type="text"
@@ -135,7 +176,6 @@ const Friends = () => {
           <button onClick={handleSendRequest}>Send Request</button>
         </div>
 
-
         {/* FRIENDS */}
         <div className="friends-section">
           <h2>Your Friends</h2>
@@ -144,24 +184,66 @@ const Friends = () => {
 
           <div className="friends-grid">
             {friends.map((f, index) => (
-              <div key={index} className="friend-card">
+              <div 
+                key={index} 
+                className="friend-card"
+                onClick={() => handleViewFriend(f.username)}
+              >
                 <h3>{f.username}</h3>
-                <p>{f.bio || "No bio"}</p>
 
-                <button 
-                  className="remove-btn"
-                  onClick={() => handleRemoveFriend(f.username)}
-                >
-                  Remove
-                </button>
               </div>
             ))}
           </div>
         </div>
 
+        {/* 🔥 FRIEND PROFILE WIDGET */}
+        {showProfile && selectedFriend && (
+          <div className="friend-profile-widget">
+
+            <button className="close-btn" onClick={handleCloseProfile}>✖</button>
+
+            <div className="top-section">
+              <div 
+                className="avatar-circle"
+                style={{ backgroundColor: selectedFriend.avatar_url || "#4CAF50" }}
+              >
+                {selectedFriend.username?.charAt(0).toUpperCase()}
+              </div>
+
+              <div className="player-info">
+                <h2>@{selectedFriend.username}</h2>
+                <p>{selectedFriend.bio || "No bio"}</p>
+              </div>
+            </div>
+
+            <div className="elo-grid">
+              {selectedStats.map((s, index) => (
+                <div key={index} className="elo-card">
+                  <h3>{s.game_mode.toUpperCase()}</h3>
+                  <p className="elo">{s.elo}</p>
+
+                  <div className="wl">
+                    <span>W: {s.wins}</span>
+                    <span>L: {s.losses}</span>
+                    <span>D: {s.draws}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              className="remove-btn"
+              onClick={() => handleRemoveFriend(selectedFriend.username)}
+            >
+              Unfriend
+            </button>
+
+          </div>
+        )}
+
       </div>
 
-      {/* RIGHT SIDE → NOTIFICATIONS */}
+      {/* RIGHT SIDE */}
       <div className="right-panel">
 
         <h2>Notifications</h2>

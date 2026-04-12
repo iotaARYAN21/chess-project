@@ -150,3 +150,32 @@
     background: #f44336;
     color: white;
 }
+
+.friend-profile-widget {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background: #fff;
+    position: relative;
+}
+
+.friend-profile-widget .top-section {
+    margin-bottom: 20px;
+}
+
+.friend-profile-widget .avatar-circle {
+    width: 95px;
+    height: 95px;
+    font-size: 32px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 24px;
+}
