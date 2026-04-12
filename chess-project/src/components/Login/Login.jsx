@@ -28,6 +28,7 @@ const Login = () => {
       }
 
       localStorage.setItem('token',data.access_token)
+      localStorage.setItem('username', name) 
       navigate('/dashboard')
     }catch(err){
       setError(err)

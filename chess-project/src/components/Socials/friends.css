@@ -1,0 +1,152 @@
+.friends-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* LEFT PANEL */
+.left-panel {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* RIGHT PANEL (NOTIFICATIONS) */
+.right-panel {
+    flex: 1;
+    border-left: 2px solid #ddd;
+    padding-left: 15px;
+}
+
+/* SEARCH */
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 8px;
+}
+
+.search-box button {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* FOLLOWERS */
+.followers-box {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* FRIENDS */
+.friends-section {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.friend-card {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    text-align: center;
+    background: #f9f9f9;
+    transition: 0.2s ease;
+    position: relative;
+}
+
+.friend-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+    margin-top: 10px;
+    padding: 6px 10px;
+    border: none;
+    background: #ff4d4d;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-btn:hover {
+    background: #cc0000;
+}
+
+/* REQUESTS */
+/* REQUEST CARD */
+.request-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fb;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+/* LEFT SIDE (USER INFO) */
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* AVATAR */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4CAF50;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* TEXT */
+.request-info h4 {
+    margin: 0;
+}
+
+.request-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+/* BUTTONS */
+.actions button {
+    margin-left: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.accept {
+    background: #4CAF50;
+    color: white;
+}
+
+.decline {
+    background: #f44336;
+    color: white;
+}

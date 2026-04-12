@@ -50,5 +50,5 @@ def get_pool() -> asyncpg.Pool:
     return _pool
 
 
-# async def get_connection() -> asyncpg.Connection:
-#     return await get_pool().acquire()
+async def get_connection() -> asyncpg.Connection:
+    return await get_pool().acquire() # type: ignore

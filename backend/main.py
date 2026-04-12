@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth,seek
+
 from db.database import init_pool , close_pool
+from routers import auth, user, social,seek
 
 
 @asynccontextmanager
@@ -15,10 +16,15 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["http://localhost:5173"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Routers
 app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(social.router)
 app.include_router(seek.router)
+
