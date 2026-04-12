@@ -52,11 +52,15 @@
     padding: 12px;
     text-align: center;
     background: #f9f9f9;
-    transition: transform 0.2s ease;
+
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
+/* hover effect */
 .elo-card:hover {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    padding: 18px;
 }
 
 .elo-card h3 {
@@ -73,6 +77,24 @@
     display: flex;
     justify-content: space-around;
     font-size: 14px;
+
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.wl span:nth-child(1) { color: green; }  /* W */
+.wl span:nth-child(2) { color: red; }    /* L */
+.wl span:nth-child(3) { color: gray; }   /* D */
+
+.elo-card:hover .wl {
+    opacity: 1;
+    max-height: 50px;
+    transform: translateY(0);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 /* GRAPH */
