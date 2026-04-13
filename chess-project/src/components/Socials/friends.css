@@ -1,181 +1,301 @@
+:root {
+  --blush: #f9edf0;
+  --champagne: #e6c8b7;
+  --cognac: #c3955b;
+  --amber: #ba6a36;
+  --emerald: #1c3934;
+  --espresso: #261311;
+}
+
+/* PAGE */
 .friends-container {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
+  display: flex;
+  gap: 20px;
+  padding: 2rem;
+
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--emerald), var(--espresso));
+  color: var(--blush);
 }
 
 /* LEFT PANEL */
 .left-panel {
-    flex: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-/* RIGHT PANEL (NOTIFICATIONS) */
+/* RIGHT PANEL */
 .right-panel {
-    flex: 1;
-    border-left: 2px solid #ddd;
-    padding-left: 15px;
+  flex: 1;
+  padding-left: 20px;
+
+  border-left: 1px solid rgba(255,255,255,0.1);
 }
 
 /* SEARCH */
 .search-box {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
+
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 }
 
 .search-box input {
-    flex: 1;
-    padding: 8px;
+  flex: 1;
+  padding: 8px;
+
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: rgba(255,255,255,0.08);
+  color: var(--blush);
+}
+
+.search-box input::placeholder {
+  color: rgba(255,255,255,0.6);
 }
 
 .search-box button {
-    padding: 8px 12px;
-    cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+
+  background: linear-gradient(135deg, var(--cognac), var(--amber));
+  color: white;
+
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* FOLLOWERS */
-.followers-box {
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    text-align: center;
+.search-box button:hover {
+  transform: translateY(-2px);
 }
 
-/* FRIENDS */
+/* FRIENDS SECTION */
 .friends-section {
-    border: 1px solid #ccc;
-    padding: 15px;
-    border-radius: 10px;
+  padding: 15px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
+.friends-section h2 {
+  margin-bottom: 12px;   
+  color: var(--champagne);
+}
+
+/* GRID */
 .friends-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
 }
 
+/* FRIEND CARD */
 .friend-card {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    text-align: center;
-    background: #f9f9f9;
-    transition: 0.2s ease;
-    position: relative;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+
+  background: linear-gradient(
+    135deg,
+    rgba(249,237,240,0.08),
+    rgba(195,149,91,0.15)
+  );
+
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
 .friend-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* REMOVE BUTTON */
-.remove-btn {
-    margin-top: 10px;
-    padding: 6px 10px;
-    border: none;
-    background: #ff4d4d;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.remove-btn:hover {
-    background: #cc0000;
-}
-
-/* REQUESTS */
 /* REQUEST CARD */
 .request-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fb;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  margin-top: 10px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+
+  backdrop-filter: blur(10px);
+  transition: 0.2s;
 }
 
-/* LEFT SIDE (USER INFO) */
+.request-card:hover {
+  transform: translateX(5px);
+}
+
+/* REQUEST INFO */
 .request-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* AVATAR */
 .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #4CAF50;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+
+  background: var(--cognac);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
 }
 
 /* TEXT */
 .request-info h4 {
-    margin: 0;
+  margin: 0;
+  color: var(--champagne);
 }
 
 .request-info p {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
 }
 
-/* BUTTONS */
+/* ACTION BUTTONS */
 .actions button {
-    margin-left: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
+  margin-left: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .accept {
-    background: #4CAF50;
-    color: white;
+  background: #4CAF50;
+  color: white;
 }
 
 .decline {
-    background: #f44336;
-    color: white;
+  background: #f44336;
+  color: white;
 }
 
+.actions button:hover {
+  transform: scale(1.05);
+}
+
+/* -------- FRIEND PROFILE WIDGET -------- */
+
 .friend-profile-widget {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    background: #fff;
-    position: relative;
+  margin-top: 10px;
+  padding: 18px;
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(249,237,240,0.08),
+    rgba(195,149,91,0.15)
+  );
+
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+
+  position: relative;
+
+  animation: slideIn 0.3s ease;
 }
 
 .friend-profile-widget .top-section {
-    margin-bottom: 20px;
+  margin-top: 16px;
 }
 
-.friend-profile-widget .avatar-circle {
-    width: 95px;
-    height: 95px;
-    font-size: 32px;
+.friend-profile-widget .elo-grid {
+  margin-top: 10px;   
+  gap: 14px;
 }
 
+/* animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Close button */
 .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 24px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  font-size: 20px;
+  color: rgba(255,255,255,0.7);
+}
+
+.close-btn:hover {
+  color: white;
+  scale: 1.2;
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+  margin-top: 15px;
+  padding: 8px 12px;
+
+  border-radius: 8px;
+  border: none;
+
+  background: linear-gradient(135deg, #ff6b6b, #c0392b);
+  color: white;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.remove-btn:hover {
+  transform: translateY(-2px);
+  scale: 1.1;
+}
+
+/* ELO CARDS (reuse theme) */
+.elo-card {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.05);
+  text-align: center;
+
+  transition: 0.2s;
+}
+
+.elo-card:hover {
+  transform: scale(1.05);
 }
