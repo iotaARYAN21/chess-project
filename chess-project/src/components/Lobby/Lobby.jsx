@@ -15,9 +15,9 @@ const Lobby = () => {
     const [botUsername,setBotUsername] = useState('Martin_Bot')
     const navigate = useNavigate()
     const gameModes = [
-    { id: 'bullet', title: 'Bullet', subtitle: 'Speed is everything.', time: '1 + 0', icon: '⚡' },
-    { id: 'blitz', title: 'Blitz', subtitle: 'The expert standard.', time: '3 + 2', icon: '⏱️' },
-    { id: 'rapid', title: 'Rapid', subtitle: 'Precision & logic.', time: '10 + 0', icon: '🕒' },
+    { id: 'bullet', title: 'Bullet', subtitle: 'Speed is everything.', time: '1 + 0 min', icon: '⏱️' },
+    { id: 'blitz', title: 'Blitz', subtitle: 'The expert standard.', time: '3 + 2 min', icon: '⏱️' },
+    { id: 'rapid', title: 'Rapid', subtitle: 'Precision & logic.', time: '10 + 0 min', icon: '⏱️' },
     ];
     const handleGameMode = async (game_id,game_time)=>{
         setLoading(true);
