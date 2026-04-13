@@ -1,157 +1,220 @@
+:root {
+  --blush: #f9edf0;
+  --champagne: #e6c8b7;
+  --cognac: #c3955b;
+  --amber: #ba6a36;
+  --emerald: #1c3934;
+  --espresso: #261311;
+}
+
+/* PAGE */
 .profile-container {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
+  min-height: 100vh;
+  padding: 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  background: linear-gradient(135deg, var(--emerald), var(--espresso));
+  color: var(--blush);
 }
 
-/*  TOP  */
+/* -------- TOP SECTION -------- */
 
 .top-section {
-    display: flex;
-    gap: 20px;
-    align-items: center;
+  display: flex;
+  gap: 25px;
+  align-items: center;
+  position: relative;
+
+  padding: 1.5rem;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 
-.profile-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.player-info {
-    font-family: 'Courier New', Courier, monospace;
-}
-
-.stats {
-    margin-top: 10px;
-    display: flex;
-    gap: 20px;
-}
-
-/*  ELO SECTION  */
-
-.elo-section {
-    margin-top: 10px;
-}
-
-.elo-section h2 {
-    margin-bottom: 10px;
-}
-
-.elo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-}
-
-.elo-card {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-    background: #f9f9f9;
-
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-/* hover effect */
-.elo-card:hover {
-    transform: scale(1.08);
-    padding: 18px;
-}
-
-.elo-card h3 {
-    margin-bottom: 5px;
-}
-
-.elo {
-    font-size: 22px;
-    font-weight: bold;
-    margin: 5px 0;
-}
-
-.wl {
-    display: flex;
-    justify-content: space-around;
-    font-size: 14px;
-
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-    border-radius: 10px;
-    transform: translateY(-5px);
-    transition: all 0.3s ease;
-}
-
-.wl span:nth-child(1) { color: green; }  /* W */
-.wl span:nth-child(2) { color: red; }    /* L */
-.wl span:nth-child(3) { color: gray; }   /* D */
-
-.elo-card:hover .wl {
-    opacity: 1;
-    max-height: 50px;
-    transform: translateY(0);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-/* GRAPH */
-
-.rating-graph {
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-}
-
-.top-section {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    position: relative; /* REQUIRED */
-}
-
-/* avatar clickable */
+/* Avatar */
 .avatar-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 40px;
-    font-weight: bold;
-    color: white;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  font-size: 38px;
+  font-weight: bold;
+  color: white;
+
+  border: 3px solid var(--champagne);
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+
+  transition: 0.2s;
 }
 
-/* picker popup */
+.avatar-circle:hover {
+  transform: scale(1.05);
+}
+
+/* Picker */
 .avatar-picker {
-    position: absolute;
-    top: 130px; /* below avatar */
-    left: 0;
+  position: absolute;
+  top: 130px;
+  left: 20px;
 
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
+  background: linear-gradient(
+    135deg,
+    rgba(249,237,240,0.1),
+    rgba(195,149,91,0.2)
+  );
 
-    display: flex;
-    gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  gap: 10px;
+
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* dots */
+/* Color dots */
 .color-dot {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: 0.2s;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s;
+
+  border: 2px solid rgba(255,255,255,0.4);
 }
 
 .color-dot:hover {
-    transform: scale(1.2);
+  transform: scale(1.2);
+}
+
+/* Player info */
+.player-info h2 {
+  color: var(--champagne);
+  margin-bottom: 5px;
+}
+
+.player-info p {
+  color: rgba(255,255,255,0.7);
+}
+
+.stats {
+  margin-top: 10px;
+  display: flex;
+  gap: 20px;
+  color: rgba(255,255,255,0.8);
+}
+
+/* -------- ELO SECTION -------- */
+
+.elo-section h2 {
+  margin-bottom: 10px;
+  color: var(--champagne);
+}
+
+/* Grid */
+.elo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+}
+
+/* Card */
+.elo-card {
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.08),
+    rgba(195, 149, 91, 0.15)
+  );
+
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+/* Hover */
+.elo-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+/* Title */
+.elo-card h3 {
+  margin-bottom: 5px;
+  color: var(--champagne);
+}
+
+/* Rating */
+.elo {
+  font-size: 26px;
+  font-weight: bold;
+  margin: 6px 0;
+  color: var(--blush);
+}
+
+/* W/L/D */
+.wl {
+  display: flex;
+  justify-content: space-around;
+  font-size: 13px;
+
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.wl span:nth-child(1) { color: #4CAF50; }
+.wl span:nth-child(2) { color: #FF6B6B; }
+.wl span:nth-child(3) { color: #aaa; }
+
+.elo-card:hover .wl {
+  opacity: 1;
+  max-height: 50px;
+  transform: translateY(0);
+}
+
+/* -------- GRAPH -------- */
+
+.rating-graph {
+  padding: 1.5rem;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+.rating-graph h2 {
+  color: var(--champagne);
+  margin-bottom: 10px;
+}
+
+.rating-graph p {
+  color: rgba(255,255,255,0.6);
 }
