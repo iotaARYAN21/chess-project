@@ -69,7 +69,7 @@ const Lobby = () => {
         <div className="lobby-intro">
             <h1>Quick Pair</h1>
         <p>Choose your battlefield. Ratings updated in real-time.</p>
-        <div className="bot-selector" style={{ margin: '20px 0' }}>
+        <div className="bot-selector" style={{ margin: '20px 0' , display:'flex', alignItems:'center'}}>
                     <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Select Opponent: </label>
                     <select 
                         value={botUsername} 

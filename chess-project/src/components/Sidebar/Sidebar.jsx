@@ -2,8 +2,7 @@ import React from 'react'
 import './sidebar.css'
 const Sidebar = ({activeTab,setActiveTab}) => {
   const navItems= [
-        { id: 'lobby', label: 'Lobby', icon: 'grid-icon' },
-    // { id: 'tournaments', label: 'Tournaments', icon: 'trophy-icon' },
+    { id: 'lobby', label: 'Lobby', icon: 'grid-icon' },
     { id: 'friends', label: 'Friends', icon: 'users-icon' },
     { id: 'archives', label: 'Archives', icon: 'history-icon' },
     {id:'profile',label:'Profile',icon:''}

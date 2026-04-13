@@ -17,18 +17,14 @@
 
 /* Page */
 body {
-  background: var(--blush);
-  color: var(--espresso);
+  background: linear-gradient(135deg, 0% var(--emerald), 100% var(--espresso));
+  color: var(--blush);
 }
 
 /* Main container */
 .lobby {
   min-height: 100vh;
   padding: 2rem 3rem;
-  background: linear-gradient(
-    135deg,
-    var(--blush) 0%,var(--cognac) 150%
-  ); /* very subtle */
 }
 
 /* Intro */
@@ -38,13 +34,13 @@ body {
 
 .lobby-intro h1 {
   font-size: 2.5rem;
-  color: var(--emerald);
+  color: var(--champagne);
   letter-spacing: 1px;
 }
 
 .lobby-intro p {
-  color: #5a4a4a;
-  margin-top: 0.5rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 1rem;
 }
 
 /* Bot selector */
@@ -54,22 +50,51 @@ body {
 
 .bot-selector label {
   font-weight: 600;
-  color: var(--espresso);
+  color: var(--blush);
 }
 
+/* Select box */
 .bot-selector select {
   padding: 0.5rem 0.8rem;
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.15);
-  background: white;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.08),
+    rgba(195, 149, 91, 0.15)
+  );
+
+  color: var(--blush);
+
   cursor: pointer;
   transition: all 0.2s ease;
+
+  /* remove default ugly styles */
+  appearance: none;
+}
+
+/* Hover + focus */
+.bot-selector select:hover {
+  border-color: var(--cognac);
 }
 
 .bot-selector select:focus {
   outline: none;
-  border-color: var(--cognac);
-  box-shadow: 0 0 4px var(--cognac);
+  border-color: var(--amber);
+  box-shadow: 0 0 6px var(--cognac);
+}
+
+/* Dropdown options (important) */
+.bot-selector select option {
+  background: var(--espresso);   /* dark dropdown */
+  color: var(--blush);
+}
+
+/* Selected / hover option (limited support but helps) */
+.bot-selector select option:checked {
+  background: var(--cognac);
+  color: white;
 }
 
 /* Game cards container */
@@ -84,7 +109,6 @@ body {
   height: 11rem;
   width: 16rem;
 
-  background: white;
   border-radius: 16px;
   padding: 1.2rem;
 
@@ -92,17 +116,28 @@ body {
   flex-direction: column;
   justify-content: space-between;
 
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  /* 🔥 Key change: warm tinted card */
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.10),   /* blush tint */
+    rgba(195, 149, 91, 0.15)     /* cognac tint */
+  );
+
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 
   transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Hover interaction */
+/* Hover */
 .game-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-  border-color: var(--champagne);
+  transform: translateY(-6px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.6);
+  border-color: rgba(230, 200, 183, 0.5);
 }
 
 /* Text hierarchy */
@@ -110,16 +145,19 @@ body {
   font-size: 0.0rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+  color: rgba(255,255,255,0.5);
 }
 
 .game-card h3 {
-  font-size: 1.4rem;
-  color: var(--amber);
+  font-size: 1.6rem;
+  color: var(--champagne);
+  font-weight: 1200;
 }
 
 .game-card p {
   font-size: 0.9rem;
-  color: #5a4a4a;
+  color: rgb(255, 255, 255);
+  font-weight: 300;
 }
 
 /* Icon */
@@ -127,7 +165,7 @@ body {
   font-size: 1.4rem;
 }
 
-/* Subtle accent strip */
+/* Accent strip */
 .game-card::before {
   content: "";
   height: 4px;
@@ -141,10 +179,4 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-}
-
-/* Fix for pseudo element positioning */
-.game-card {
-  position: relative;
-  overflow: hidden;
 }
