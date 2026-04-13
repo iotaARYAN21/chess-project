@@ -1,35 +1,137 @@
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+:root {
+  --blush: #f9edf0;
+  --champagne: #e6c8b7;
+  --cognac: #c3955b;
+  --amber: #ba6a36;
+  --emerald: #1c3934;
+  --espresso: #261311;
 }
-.login{
-    border: 2px solid black;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* text-align: center; */
-    align-items: center;
-    /* padding: 2rem; */
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-.l-details{
-    height: 25rem;
-    width: 25rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid black;
-    border-radius: 20px;
-    margin-top: 2rem;
+
+body {
+  background: linear-gradient(135deg, var(--emerald), var(--espresso));
+  min-height: 100vh;
 }
-.l-details>*{
-    margin: 1rem;
+
+/* Main container */
+.login {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--blush);
 }
-.l-details input , .l-details button{
-    height: 2rem;
-    width: 20rem;
-    border-radius: 5px;
+
+/* Title */
+.login h1 {
+  font-size: 3rem;
+  letter-spacing: 2px;
+  color: var(--champagne);
+  margin-bottom: 1rem;
+}
+
+/* Card */
+.l-details {
+  width: 26rem;
+  padding: 2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Heading */
+.l-details h2 {
+  margin-bottom: 1rem;
+  color: var(--champagne);
+}
+
+/* Inputs */
+.l-details input {
+  width: 100%;
+  height: 2.5rem;
+  margin: 0.6rem 0;
+  padding: 0 0.8rem;
+
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  outline: none;
+
+  background: rgba(255,255,255,0.08);
+  color: var(--blush);
+
+  transition: all 0.2s ease;
+}
+
+.l-details input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.l-details input:focus {
+  border: 1px solid var(--cognac);
+  box-shadow: 0 0 6px var(--cognac);
+}
+
+/* Button */
+.l-details button {
+  width: 100%;
+  height: 2.7rem;
+  margin-top: 1rem;
+
+  border-radius: 8px;
+  border: none;
+
+  background: linear-gradient(135deg, var(--cognac), var(--amber));
+  color: white;
+  font-weight: bold;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.l-details button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+/* Error */
+.l-details p {
+  margin-top: 0.5rem;
+}
+
+.l-details p[style] {
+  color: #ff6b6b !important;
+}
+
+/* Signup link */
+.l-details a {
+  color: var(--champagne);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.l-details a:hover {
+  text-decoration: underline;
+}
+
+.login::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
 }
