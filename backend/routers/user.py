@@ -18,7 +18,7 @@ class ProfileUpdate(BaseModel):
 
 
 def get_current_user():
-    return "aryan"  # TODO replace with auth
+    return "murali"  # TODO replace with auth
 
 
 # PROFILE
