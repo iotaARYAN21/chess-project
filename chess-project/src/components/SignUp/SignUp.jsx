@@ -6,7 +6,7 @@ const SignUp = () => {
     <div className='signup'>
       <h1>4Chess</h1>
       <div className="s-details">
-        <h2>Welcome Back</h2>
+        <h2>Create Account</h2>
         <input type="text" id='name' placeholder='Name' />
         <input type="email" id='email' placeholder='Email'/>
         <input type="password" id='password' placeholder='Password' />
