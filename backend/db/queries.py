@@ -196,16 +196,24 @@ async def update_user_profile(
 # USER STATS  (per game-mode ELO + win/loss/draw counters)
 # ===========================================================================
 
-async def get_user_stats_by_mode(userid:uuid.UUID) -> list:  #TODO -> it should be userid
+async def get_user_stats_by_mode(userid:uuid.UUID,game_mode:str) -> list:
     """
     Calls the stored function GET_USER_STATS_BY_MODE.
     Returns a list of records: (game_mode, elo, n_wins, n_losses, n_draws).
     """
     async with get_pool().acquire() as conn:
         return await conn.fetch(
-            "SELECT * FROM get_user_stats_by_mode($1)", userid
+            """
+            SELECT us.elo, us.n_wins, us.n_losses, us.n_draws
+            FROM user_stats us
+            JOIN game_mode gm ON gm.id = us.game_mode_id
+            WHERE us.user_id = $1::uuid
+              AND gm.name = $2::text
+            """
+            ,
+            userid,
+            game_mode,
         )
-
 
 async def update_user_elo(
     user_id: uuid.UUID,

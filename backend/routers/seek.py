@@ -1,7 +1,7 @@
 from fastapi import APIRouter,HTTPException
 from pydantic import BaseModel
 import uuid
-from db.queries import get_account_by_username,create_match,get_user_stats_by_mode
+from db.queries import get_account_by_username,get_game_mode_by_name,create_match,get_user_stats_by_mode,get_time_controls_by_mode
 # from database import DBSession
 
 router = APIRouter(prefix='/api')
@@ -9,7 +9,7 @@ class BotMatchRequest(BaseModel):
     game_mode:str
     bot_username:str
     userid:uuid.UUID
-    time_control_id:uuid.UUID
+    # time_control_id:uuid.UUID
 
 @router.post('/seek')
 async def create_bot_match(request: BotMatchRequest):
@@ -17,18 +17,26 @@ async def create_bot_match(request: BotMatchRequest):
     Creates an instant match by querying the engine from the database.
     """
     bot_account = await get_account_by_username(request.bot_username)
+    game_id = await get_game_mode_by_name(request.game_mode)
+    if not game_id:
+        raise HTTPException(status_code=404, detail=f"Game mode '{request.game_mode}' not found")
+
+    tcid = await get_time_controls_by_mode(request.game_mode)
+    if not tcid:
+        raise HTTPException(status_code=404, detail=f"No time controls found for mode '{request.game_mode}'")
+
     if not bot_account:
         raise HTTPException(status_code=404, detail="Engine account not found in database")
     
     try:
-        user_stats = await get_user_stats_by_mode(request.userid) # TODO -> the function should accept id instead of username
-        user_elo = user_stats[2] # as returns a list and according to relational model , elo is on 2nd index
+        user_stats = await get_user_stats_by_mode(request.userid, request.game_mode)
+        user_elo = user_stats[0]["elo"] # as returns a list and according to relational model , elo is on 2nd index
         new_game_id = await create_match( # returns uniq id
             white_id = request.userid,
             black_id=bot_account["id"],
-            time_control_id=request.time_control_id,
+            time_control_id=tcid[0]["id"],
             white_elo=user_elo,
-            black_elo=3200  #TODO defaulting elo rating of engine to 3200
+            black_elo=3200 
         )
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Failed to create a match ,error: {e}")
