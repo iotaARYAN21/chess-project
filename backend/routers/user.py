@@ -5,8 +5,8 @@ from typing import Optional
 from db.queries import (
     get_user_profile,
     update_user_profile,
-    get_user_stats_by_mode,
     get_matches_by_game_mode,
+     get_user_stats_by_name
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -56,7 +56,7 @@ async def update_profile(username: str, data: ProfileUpdate):
 
 @router.get("/{username}/stats")
 async def get_user_stats(username: str):
-    rows = await get_user_stats_by_mode(username)
+    rows = await get_user_stats_by_name(username)
 
     return [
         {

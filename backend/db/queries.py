@@ -215,6 +215,24 @@ async def get_user_stats_by_mode(userid:uuid.UUID,game_mode:str) -> list:
             game_mode,
         )
 
+async def get_user_stats_by_name(username: str):
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT 
+                gm.name AS game_mode,
+                us.elo,
+                us.n_wins,
+                us.n_losses,
+                us.n_draws
+            FROM user_stats us
+            JOIN account a ON a.id = us.user_id
+            JOIN game_mode gm ON gm.id = us.game_mode_id
+            WHERE a.username = $1
+            """,
+            username,
+        )
+
 async def update_user_elo(
     user_id: uuid.UUID,
     game_mode_id: uuid.UUID,
