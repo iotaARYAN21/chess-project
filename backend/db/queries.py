@@ -440,6 +440,25 @@ async def get_matches_by_game_mode(username: str, game_mode_name: str) -> list:
         )
 
 
+async def get_all_user_matches(username: str) -> list:
+    """Fetch all completed matches for a specific user across all modes."""
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT m.*, wa.username AS white_username, ba.username AS black_username,
+                   gm.name as game_mode_name
+            FROM match m
+            JOIN account wa ON wa.id = m.white_id
+            JOIN account ba ON ba.id = m.black_id
+            JOIN time_control tc ON tc.id = m.time_control_id
+            JOIN game_mode gm ON gm.id = tc.game_mode_id
+            WHERE (wa.username = $1 OR ba.username = $1)
+              AND m.status = 'completed'
+            ORDER BY m.ended_at DESC
+            """,
+            username
+        )
+
 # ===========================================================================
 # MOVE
 # ===========================================================================
