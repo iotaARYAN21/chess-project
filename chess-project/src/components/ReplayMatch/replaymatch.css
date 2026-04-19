@@ -1,0 +1,26 @@
+.replay-div{
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* flex-direction: column; */
+}
+.controls{
+    display: flex;
+    justify-content: space-around;
+}
+.controls> *{
+    padding: 0.5rem;
+    border-radius: 5px;
+    width: 3rem;
+    margin: 2rem;
+    cursor: pointer;
+}
+#back-btn{
+    margin-left: 43%;
+    height: 50px;
+    width: 70px;
+    border-radius: 10px;
+    cursor: pointer;
+}

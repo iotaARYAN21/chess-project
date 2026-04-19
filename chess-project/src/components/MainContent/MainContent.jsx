@@ -2,6 +2,7 @@ import React from 'react'
 import Lobby from '../Lobby/Lobby'
 import Profile from '../Profile/Profile'
 import Friends from '../Socials/Friends'
+import Archives from '../Archive/Archive'
 function LobbyView(){
     return <div className='lobby'>
         <h1>Quick Pair</h1>
@@ -35,7 +36,7 @@ const MainContent = ({activeTab}) => {
     case 'friends':
         return <Friends/>
     case 'archives':
-        return <ArchivesView/>
+        return <Archives/>
     case 'profile':
         return <Profile/>
   }
