@@ -1,0 +1,72 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chess-app
+    ports:
+      - "0.0.0.0:8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    restart: always 
+    networks:
+      - chess_net
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")' || exit 1"]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+
+  db:
+    # Pinned to specific minor version and alpine architecture
+    image: postgres:16.2-alpine
+    container_name: chess-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    command: >
+      postgres -c max_connections=${DB_MAX_CONNECTIONS}
+               -c shared_buffers=256MB 
+               -c checkpoint_timeout=15min
+               -c synchronous_commit=off
+               -c wal_level=minimal
+               -c max_wal_senders=0
+               -c effective_cache_size=512MB 
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chess_net
+
+  pgadmin:
+    # Pinned to a stable release version
+    image: dpage/pgadmin4:8.5
+    container_name: chess-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pg@admin.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - chess_net
+
+networks:
+  chess_net:
+    driver: bridge
+
+volumes:
+  postgres_data:

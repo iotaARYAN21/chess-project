@@ -52,8 +52,10 @@ CREATE TABLE IF NOT EXISTS GAME_MODE (
 -- NOTE SMALLINT holds: -32768 to 32767 seconds => 32767 / 60 = 546 minutes = 9.1 hours (Enough) 
 CREATE TABLE IF NOT EXISTS TIME_CONTROL (
 	ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
-	GAME_MODE_ID UUID REFERENCES GAME_MODE (ID),
-	BASE_TIME SMALLINT NOT NULL, -- in seconds
+	-- GAME_MODE_ID UUID REFERENCES GAME_MODE (ID),
+	GAME_MODE_ID UUID NOT NULL REFERENCES GAME_MODE (ID),
+	-- BASE_TIME SMALLINT NOT NULL, -- in seconds
+	BASE_TIME INT NOT NULL, -- in seconds (as want long active matches)
 	INCR_TIME SMALLINT NOT NULL DEFAULT 0, -- in seconds
 	CONSTRAINT CHK_BASE_TIME CHECK (BASE_TIME > 0),
 	CONSTRAINT CHK_INCR_TIME CHECK (INCR_TIME >= 0)
@@ -61,19 +63,17 @@ CREATE TABLE IF NOT EXISTS TIME_CONTROL (
 
 -- CREATE TABLE IF NOT EXISTS MATCH (
 -- 	ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
---     -- WHITE_ID UUID REFERENCES PLAYABLE_ACCOUNT (ID) ON DELETE SET NULL,
--- 	WHITE_ID UUID NOT NULL REFERENCES PLAYABLE_ACCOUNT (ID), -- both not null as no matchmaking
---     -- BLACK_ID UUID REFERENCES PLAYABLE_ACCOUNT (ID) ON DELETE SET NULL,
--- 	BLACK_ID UUID NOT NULL REFERENCES PLAYABLE_ACCOUNT (ID),
+--     WHITE_ID UUID REFERENCES PLAYABLE_ACCOUNT (ID) ON DELETE SET NULL,
+--     BLACK_ID UUID REFERENCES PLAYABLE_ACCOUNT (ID) ON DELETE SET NULL,
 -- 	TIME_CONTROL_ID UUID NOT NULL REFERENCES TIME_CONTROL (ID),
 -- 	-- STATUS VARCHAR(20) NOT NULL DEFAULT 'waiting', -- unclean if kept keep matchmaking seperate
 -- 	STATUS VARCHAR(20) NOT NULL, -- (update ONCE END)
--- 	RESULT VARCHAR(10), -- this is already in pgn (redundant) (update ONCE END)
--- 	-- CURRENT_TURN VARCHAR(5) NOT NULL DEFAULT 'white', -- dont make default white (redundant) (FREQ UPDATES)
+-- 	RESULT VARCHAR(10), -- this is already in pgn (redundant but keep it) (update ONCE END)
+-- 	-- CURRENT_TURN VARCHAR(5) NOT NULL DEFAULT 'white', -- dont make default white (redundant) (FREQ UPDATES) not needed can take from fen
 -- 	WHITE_TIME_REMAINING_MS INT NOT NULL, -- (FREQ UPDATES)
 -- 	BLACK_TIME_REMAINING_MS INT NOT NULL, -- (FREQ UPDATES)
--- 	WHITE_TIMESTAMP INT NOT NULL, -- for computing delta (FREQ UPDATES)
--- 	BLACK_TIMESTAMP INT NOT NULL, -- for computing delta (FREQ UPDATES)
+-- 	-- WHITE_TIMESTAMP INT NOT NULL, -- for computing delta (FREQ UPDATES) not needed
+-- 	-- BLACK_TIMESTAMP INT NOT NULL, -- for computing delta (FREQ UPDATES) not needed
 -- 	WHITE_ELO INT NOT NULL, -- white current elo before a match ends (update ONCE END)
 -- 	BLACK_ELO INT NOT NULL, -- black current elo before match ends (update ONCE END)
 -- 	MOVE_NUMBER SMALLINT NOT NULL,
@@ -109,91 +109,84 @@ CREATE TABLE IF NOT EXISTS TIME_CONTROL (
 -- 	)
 -- );
 
--- no update or update only once
-CREATE TABLE MATCH (
+
+-- updated once only
+CREATE TABLE IF NOT EXISTS MATCH (
     ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
-    WHITE_ID UUID NOT NULL REFERENCES PLAYABLE_ACCOUNT(ID),
-    BLACK_ID UUID NOT NULL REFERENCES PLAYABLE_ACCOUNT(ID),
+    WHITE_ID UUID REFERENCES PLAYABLE_ACCOUNT(ID) ON DELETE SET NULL,
+    BLACK_ID UUID REFERENCES PLAYABLE_ACCOUNT(ID) ON DELETE SET NULL,
     TIME_CONTROL_ID UUID NOT NULL REFERENCES TIME_CONTROL(ID),
     
     -- Initial state
-    WHITE_ELO_INITIAL INT NOT NULL,
-    BLACK_ELO_INITIAL INT NOT NULL,
-    STARTED_AT TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    WHITE_ELO_INITIAL INT NOT NULL CHECK (WHITE_ELO_INITIAL >= 0),
+    BLACK_ELO_INITIAL INT NOT NULL CHECK (BLACK_ELO_INITIAL >= 0),
+    STARTED_AT TIMESTAMPTZ NOT NULL,
     
     -- Final state (updated ONCE)
-    STATUS VARCHAR(20) NOT NULL DEFAULT 'active',
-    RESULT VARCHAR(10),
-    ENDED_AT TIMESTAMPTZ,
+    STATUS VARCHAR(20) NOT NULL CHECK (STATUS IN ('active', 'completed')),
+    RESULT VARCHAR(10) CHECK (RESULT IS NULL OR RESULT IN ('white', 'black', 'draw')),
+	ENDED_AT TIMESTAMPTZ,
+	WHITE_ELO_SHIFT INT,
+	BLACK_ELO_SHIFT INT,
+	FINAL_FEN TEXT,
+	FINAL_PGN TEXT,
     
-    CONSTRAINT CHECK_WHITE_BLACK CHECK (WHITE_ID <> BLACK_ID),
-    CONSTRAINT CHK_STATUS CHECK (STATUS IN ('active', 'completed')),
-    CONSTRAINT CHK_RESULT CHECK (RESULT IS NULL OR RESULT IN ('white', 'black', 'draw')),
+    CONSTRAINT CHECK_WHITE_BLACK CHECK (WHITE_ID IS NULL OR BLACK_ID IS NULL OR WHITE_ID <> BLACK_ID),
 	CONSTRAINT CHK_END_AFTER_START CHECK (ENDED_AT IS NULL OR ENDED_AT >= STARTED_AT),
-	CONSTRAINT CHK_RESULT_ON_COMPLETION CHECK (
-		(
-			STATUS = 'completed'
-			AND RESULT IS NOT NULL
-		)
-		OR (
-			STATUS <> 'completed'
-			AND RESULT IS NULL
-		)
-	)
+	CONSTRAINT CHK_MATCH_LIFECYCLE CHECK (
+        (STATUS = 'active' AND 
+         RESULT IS NULL AND 
+         ENDED_AT IS NULL AND 
+		 WHITE_ELO_SHIFT IS NULL AND
+		 BLACK_ELO_SHIFT IS NULL AND
+		 FINAL_FEN IS NULL AND 
+         FINAL_PGN IS NULL)
+        OR 
+        (STATUS = 'completed' AND 
+         RESULT IS NOT NULL AND 
+         ENDED_AT IS NOT NULL AND 
+		 WHITE_ELO_SHIFT IS NOT NULL AND
+		 BLACK_ELO_SHIFT IS NOT NULL AND
+		 FINAL_FEN IS NOT NULL AND 
+         FINAL_PGN IS NOT NULL)
+    )
+
 );
 
 -- frequently updated
--- trigger to add this row on inserting into a match
--- trigger to incr move count on inserting a move for this match
-CREATE TABLE MATCH_STATE (
+-- lets just delete it after use 
+-- easy to move to something like redis and keep seperation of hot and cold data
+-- TODO: draw offered by still needs to be added
+CREATE TABLE IF NOT EXISTS MATCH_STATE (
     MATCH_ID UUID PRIMARY KEY REFERENCES MATCH(ID) ON DELETE CASCADE,
     
-    -- Current position (pgn not needed it is in move)
-    FEN TEXT NOT NULL DEFAULT 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+	-- DRAW_OFFERED_BY UUID REFERENCES playable_account(id) ON DELETE SET NULL,
+    FEN TEXT NOT NULL,
     
-    -- Clock state (store last move time + remaining)
-	-- elapsed_ms = floor(now() - turn_started_at() * 1000) ms
-	-- remaining_ms = max(old_remaining_ms - elapsed_ms, 0)
-    WHITE_TIME_REMAINING_MS INT NOT NULL,
-    BLACK_TIME_REMAINING_MS INT NOT NULL,
-    TURN_STARTED_AT TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    WHITE_TIME_REMAINING_MS INT NOT NULL CHECK (WHITE_TIME_REMAINING_MS >= 0),
+    BLACK_TIME_REMAINING_MS INT NOT NULL CHECK (BLACK_TIME_REMAINING_MS >= 0),
+    TURN_STARTED_AT TIMESTAMPTZ NOT NULL,
     
-    -- Cache for performance (optional)
-    MOVE_COUNT SMALLINT NOT NULL DEFAULT 0,
-    
-    CONSTRAINT CHK_WHITE_CLOCK CHECK (WHITE_TIME_REMAINING_MS >= 0),
-    CONSTRAINT CHK_BLACK_CLOCK CHECK (BLACK_TIME_REMAINING_MS >= 0)
+    MOVE_NUMBER SMALLINT NOT NULL CHECK (MOVE_NUMBER >= 0),
+	MOVE_HISTORY TEXT[] NOT NULL
 );
 
 -- add a trigger just for this is this even needed maybe only completed games
+-- NOTE: this is for calculating the stats for player 
+-- i can filter by player_id and get a graph from this
 CREATE TABLE IF NOT EXISTS MATCH_LOG (
 	ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
 	MATCH_ID UUID NOT NULL REFERENCES MATCH (ID) ON DELETE CASCADE,
 	PLAYER_ID UUID REFERENCES PLAYER_ACCOUNT (ID) ON DELETE SET NULL,
-	ELO_BEFORE INT NOT NULL,
+	PLAYER_SIDE CHAR(1) NOT NULL CHECK (PLAYER_SIDE IN ('w', 'b')),
+	ELO_BEFORE INT NOT NULL CHECK (ELO_BEFORE >= 0),
 	ELO_SHIFT INT NOT NULL,
-	LOG_TIME TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	ENDED_AT TIMESTAMPTZ NOT NULL,
+
+	CONSTRAINT UQ_MATCH_PLAYER_LOG UNIQUE (MATCH_ID, PLAYER_SIDE)
 );
 
--- Lets make it immutable and a replacement for pgn (match- move history)
-CREATE TABLE IF NOT EXISTS MOVE (
-	ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
-	MATCH_ID UUID NOT NULL REFERENCES MATCH (ID) ON DELETE CASCADE,
 
-	MOVE_NUMBER SMALLINT NOT NULL,
-	PLAYER_COLOR VARCHAR(5) NOT NULL,
-	UCI VARCHAR(5) NOT NULL, -- e.g. 'e2e4', 'e7e8q'
-
-	-- TIME_SPENT_MS INT NOT NULL, -- time spent in milliseconds
-	TIME_REMAINING_MS INT NOT NULL,
-	PLAYED_AT TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-	CONSTRAINT CHK_MOVE_NUMBER CHECK (MOVE_NUMBER > 0),
-	CONSTRAINT CHK_PLAYER_COLOR CHECK (PLAYER_COLOR IN ('white', 'black')),
-	CONSTRAINT CHK_TIME_REMAINING_MS CHECK (TIME_REMAINING_MS >= 0),
-	CONSTRAINT UQ_MATCH_MOVE UNIQUE (MATCH_ID, MOVE_NUMBER, PLAYER_COLOR),
-);
--- PARTITION BY HASH (MATCH_ID); for now ignore
 
 -- Purpose: 
 -- 1) When a user seeks a challenge, an instance of GAME_SEEK is created
@@ -240,7 +233,8 @@ CREATE TABLE IF NOT EXISTS USER_PROFILE (
 -- Purpose: per game mode statistics for human users
 CREATE TABLE IF NOT EXISTS USER_STATS (
 	USER_ID UUID NOT NULL REFERENCES PLAYER_ACCOUNT (ID) ON DELETE CASCADE,
-	GAME_MODE_ID UUID NOT NULL REFERENCES GAME_MODE (ID) ON DELETE CASCADE,
+	-- GAME_MODE_ID UUID NOT NULL REFERENCES GAME_MODE (ID) ON DELETE CASCADE,
+	GAME_MODE_ID UUID NOT NULL REFERENCES GAME_MODE (ID),
 	ELO SMALLINT NOT NULL DEFAULT 1200,
 	N_WINS INT NOT NULL DEFAULT 0,
 	N_LOSSES INT NOT NULL DEFAULT 0,
@@ -339,24 +333,25 @@ CREATE TABLE IF NOT EXISTS ANTI_CHEAT_LOG (
 	)
 );
 
--- drop table ANTI_CHEAT_LOG;
--- drop table BAN;
--- drop table FRIEND_REQUEST;
--- drop table FOLLOWER;
--- drop table FRIENDSHIP;
--- drop table USER_SESSION_LOG;
--- drop table USER_STATS;
--- drop table USER_PROFILE;
--- drop table GAME_SEEK;
--- drop table MOVE;
--- drop table MATCH_LOG;
--- drop table MATCH;
--- drop table TIME_CONTROL;
--- drop table GAME_MODE;
--- drop table ADMIN_ACCOUNT;
--- drop table ENGINE_ACCOUNT;
--- drop table PLAYER_ACCOUNT;
--- drop table PLAYABLE_ACCOUNT;
--- drop table ACCOUNT;
+-- drop table if exists ANTI_CHEAT_LOG;
+-- drop table if exists BAN;
+-- drop table if exists FRIEND_REQUEST;
+-- drop table if exists FOLLOWER;
+-- drop table if exists FRIENDSHIP;
+-- drop table if exists USER_SESSION_LOG;
+-- drop table if exists USER_STATS;
+-- drop table if exists USER_PROFILE;
+-- drop table if exists GAME_SEEK;
+-- drop table if exists MATCH_LOG;
+-- drop table if exists MATCH_STATE;
+-- drop table if exists MATCH;
+-- drop table if exists TIME_CONTROL;
+-- drop table if exists GAME_MODE;
+-- drop table if exists ADMIN_ACCOUNT;
+-- drop table if exists ENGINE_ACCOUNT;
+-- drop table if exists PLAYER_ACCOUNT;
+-- drop table if exists PLAYABLE_ACCOUNT;
+-- drop table if exists ACCOUNT;
+-- drop extension if exists "pgcrypto";
 
 	
