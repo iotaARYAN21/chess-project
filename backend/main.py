@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from db.database import init_pool , close_pool
-from routers import auth, user, social,seek
+from db.database import init_pool , close_pool, get_pool
+from routers import auth, user, social, seek, match
 
 
 @asynccontextmanager
@@ -14,6 +14,16 @@ async def lifespan(app:FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+@app.get("/health", include_in_schema=False)
+async def health_check():
+    try:
+        pool = get_pool()
+        async with pool.acquire() as conn:
+            await conn.execute("SELECT 1")
+        return {"status": "healthy", "database": "up"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}, 500
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -22,9 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
 # Routers
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(social.router)
 app.include_router(seek.router)
+app.include_router(match.router)
 

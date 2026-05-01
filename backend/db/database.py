@@ -6,6 +6,9 @@ Manages the asyncpg connection pool for the chess application.
 import asyncpg
 import os
 from typing import Optional
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 DB_HOST     = os.getenv("DB_HOST",     "localhost")
 DB_PORT     = int(os.getenv("DB_PORT", "5432"))
@@ -51,4 +54,4 @@ def get_pool() -> asyncpg.Pool:
 
 
 async def get_connection() -> asyncpg.Connection:
-    return await get_pool().acquire() # type: ignore
+    return await get_pool().acquire()

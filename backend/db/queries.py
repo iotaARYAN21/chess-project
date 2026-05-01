@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Optional
 from .database import get_pool
 import asyncpg
+from http import HTTPStatus
+from fastapi import HTTPException
 
 
 # ===========================================================================
@@ -328,26 +330,27 @@ async def create_match(
     white_id: uuid.UUID,
     black_id: uuid.UUID,
     time_control_id: uuid.UUID,
-    white_elo: int,
-    black_elo: int,
+    white_elo_initial: int,
+    black_elo_initial: int,
+    started_at: datetime,
 ) -> uuid.UUID:
-    """Insert a new match in 'waiting' status and return its UUID."""
-    tc = await get_time_control_by_id(time_control_id)
-    if not tc:
-        raise ValueError(f"Time control {time_control_id} not found")
-    base_ms = tc["base_time"] * 1000
-
+    """Insert a new match in 'active' status and return its UUID."""
     async with get_pool().acquire() as conn:
         return await conn.fetchval(
             """
             INSERT INTO match
-                (white_id, black_id, time_control_id, white_elo, black_elo,
-                 white_time_remaining_ms, black_time_remaining_ms)
-            VALUES ($1, $2, $3, $4, $5, $6, $6)
+                (white_id, 
+                black_id, 
+                time_control_id, 
+                white_elo_initial, 
+                black_elo_initial,
+                started_at,
+                status)
+            VALUES ($1, $2, $3, $4, $5, $6, 'active')
             RETURNING id
             """,
             white_id, black_id, time_control_id,
-            white_elo, black_elo, base_ms,
+            white_elo_initial, black_elo_initial, started_at
         )
 
 
@@ -357,6 +360,94 @@ async def get_match_by_id(match_id: uuid.UUID) -> Optional[asyncpg.Record]:
             "SELECT * FROM match WHERE id = $1", match_id
         )
 
+# NOTE: ADDED this fetch function
+async def get_match_state_by_id(match_id: uuid.UUID) -> Optional[asyncpg.Record]:
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            "SELECT * FROM match_state WHERE match_id = $1", match_id
+        )
+
+# NOTE: Added this transaction to handle moves only
+async def call_handle_match_move(
+    match_id: uuid.UUID,
+    move_number: int,
+    uci: str,
+    fen: str,
+    white_ms: int,
+    black_ms: int,
+    status: str,
+    next_turn_at: datetime,
+    result: Optional[str],
+    ended_at: Optional[datetime],
+    white_elo_shift: int,
+    black_elo_shift: int
+) -> None:
+    """
+    Executes the stored procedure to update game state.
+    Handles optimistic concurrency errors.
+    """
+    async with get_pool().acquire() as conn:
+        try:
+            await conn.execute(
+                """
+                SELECT fn_handle_match_move(
+                    $1::uuid, 
+                    $2::int, 
+                    $3::text, 
+                    $4::text, 
+                    $5::int, 
+                    $6::int, 
+                    $7::varchar, 
+                    $8::timestamptz, 
+                    $9::varchar, 
+                    $10::timestamptz, 
+                    $11::int, 
+                    $12::int 
+                );
+                """,
+                match_id,          # $1
+                move_number,       # $2
+                uci,               # $3
+                fen,               # $4
+                white_ms,          # $5
+                black_ms,          # $6
+                status,            # $7
+                next_turn_at,      # $8
+                result,            # $9
+                ended_at,          # $10
+                white_elo_shift,    # $11
+                black_elo_shift,    # $12
+            )
+        except Exception as e:
+            if "CONCURRENCY_ERROR" in str(e):
+                raise HTTPException(HTTPStatus.CONFLICT, "Move out of sync: The game state has changed.")
+            raise e
+
+# NOTE: another transaction for handling timeout
+# TODO: need to check this thoroughly
+async def call_handle_timeout(
+    match_id: uuid.UUID,
+    move_number: int,
+    white_ms: int,
+    black_ms: int,
+    elapsed_ms: int,
+    result: str,
+    ended_at: datetime,
+    white_elo_diff: int,
+    black_elo_diff: int
+) -> None:
+    async with get_pool().acquire() as conn:
+        # This function updates the 'match' status to completed 
+        # but doesn't add a new move to move_history
+        await conn.execute(
+            """
+            SELECT handle_match_timeout(
+                $1, $2, $3, $4, $5, $6, $7, $8, $9
+            );
+            """,
+            match_id, move_number, white_ms, black_ms, elapsed_ms,
+            result, ended_at, white_elo_diff, black_elo_diff
+        )
 
 async def get_active_matches() -> list:
     async with get_pool().acquire() as conn:
