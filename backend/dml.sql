@@ -103,12 +103,13 @@ VALUES
 	
 -- INSERT INTO NON_PLAYABLE_ACCOUNT VALUES ('a1000000-0000-0000-0000-000000000005');
 
-INSERT INTO ADMIN_ACCOUNT(ID,ADMIN_LEVEL) VALUES
+INSERT INTO ADMIN_ACCOUNT(ID,ADMIN_LEVEL,email,password_hash) VALUES
 	(
 		'a1000000-0000-0000-0000-000000000005',
-		'admin'
+		'admin',
+		'sara@chess.com',
+		'hash_sara'
 	);
-
 
 -- GAME_MODE
 INSERT INTO
@@ -168,24 +169,38 @@ VALUES
 		'b1000000-0000-0000-0000-000000000004',
 		5400,
 		30
+	),
+    (
+        'c1000000-0000-0000-0000-000000000006',
+		'b1000000-0000-0000-0000-000000000004',
+        2000000,
+        1
 	);
+    -- 23 days (2 000 000 s) * 1000 ms close to integer
+    -- 2 147 483 647 - 2 000 000 000 = 147 483 647 with 
+    -- 1000 ms incr will allow for 147 483 moves
+    ;
+
 
 -- MATCH
 INSERT INTO
-	MATCH (
+MATCH (
 		ID,
 		WHITE_ID,
 		BLACK_ID,
 		TIME_CONTROL_ID,
-		WHITE_ELO,
-		BLACK_ELO,
+
+		WHITE_ELO_INITIAL,
+		BLACK_ELO_INITIAL,
+        STARTED_AT,
+
 		STATUS,
-		RESULT,
-		CURRENT_TURN,
-		WHITE_TIME_REMAINING_MS,
-		BLACK_TIME_REMAINING_MS,
-		STARTED_AT,
-		ENDED_AT
+        RESULT,
+        ENDED_AT,
+		WHITE_ELO_SHIFT,
+		BLACK_ELO_SHIFT,
+        FINAL_FEN,
+        FINAL_PGN
 	)
 VALUES
 	-- shreesh vs simeon
@@ -193,32 +208,34 @@ VALUES
 		'd1000000-0000-0000-0000-000000000001',
 		'a1000000-0000-0000-0000-000000000001',
 		'a1000000-0000-0000-0000-000000000002',
-		'c1000000-0000-0000-0000-000000000003',
+		'c1000000-0000-0000-0000-000000000006',
 		1600,
 		1600,
-		'completed',
-		'white',
-		'white',
-		120000,
-		95000,
-		NOW() - INTERVAL '2 days',
-		NOW() - INTERVAL '2 days' + INTERVAL '25 minutes'
+        NOW(),
+		'active',
+        NULL,
+        NULL,
+		NULL,
+		NULL,
+        NULL,
+        NULL
 	),
 	-- simeon vs aryan
 	(
 		'd1000000-0000-0000-0000-000000000002',
 		'a1000000-0000-0000-0000-000000000002',
 		'a1000000-0000-0000-0000-000000000003',
-		'c1000000-0000-0000-0000-000000000002',
+		'c1000000-0000-0000-0000-000000000006',
 		1590,
 		1700,
-		'completed',
-		'draw',
-		'white',
-		60000,
-		75000,
-		NOW() - INTERVAL '1 day',
-		NOW() - INTERVAL '1 day' + INTERVAL '18 minutes'
+        NOW(),
+        'active',
+        NULL,
+        NULL,
+		NULL,
+		NULL,
+        NULL,
+        NULL
 	),
 	-- aryan vs murali
 	(
@@ -228,13 +245,14 @@ VALUES
 		'c1000000-0000-0000-0000-000000000004',
 		1705,
 		1500,
+        NOW() - INTERVAL '3 days',
 		'completed',
-		'black',
-		'white',
-		200000,
-		310000,
-		NOW() - INTERVAL '3 days',
-		NOW() - INTERVAL '3 days' + INTERVAL '40 minutes'
+        'white',
+		NOW() - INTERVAL '3 days' + INTERVAL '40 minutes',
+		10,
+		-5,
+        'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4',
+        '1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#'
 	),
 	-- murali vs shreesh
 	(
@@ -244,13 +262,14 @@ VALUES
 		'c1000000-0000-0000-0000-000000000001',
 		1550,
 		1610,
+		NOW() - INTERVAL '3 days',
 		'completed',
-		'white',
-		'white',
-		30000,
-		15000,
-		NOW() - INTERVAL '4 days',
-		NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'
+        'white',
+		NOW() - INTERVAL '3 days' + INTERVAL '40 minutes',
+		10,
+		-20,
+        'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4',
+        '1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#'
 	),
 	-- shreesh vs aryan
 	(
@@ -260,13 +279,14 @@ VALUES
 		'c1000000-0000-0000-0000-000000000005',
 		1605,
 		1695,
+        NOW() - INTERVAL '5 days',
 		'completed',
 		'draw',
-		'white',
-		1800000,
-		2100000,
-		NOW() - INTERVAL '5 days',
-		NOW() - INTERVAL '5 days' + INTERVAL '90 minutes'
+		NOW() - INTERVAL '5 days' + INTERVAL '90 minutes',
+		10,
+		-10,
+		'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        '1. e4 e5 1/2-1/2'
 	),
 	 -- simeon vs murali
 	(
@@ -276,13 +296,14 @@ VALUES
 		'c1000000-0000-0000-0000-000000000003',
 		1595,
 		1575,
-		'completed',
-		'white',
-		'black',
-		240000,
-		180000,
 		NOW() - INTERVAL '20 minutes',
-		NOW() - INTERVAL '10 minutes'
+        'completed', 
+        'black', 
+        NOW() - INTERVAL '10 minutes',
+		-5,
+		5,
+        'rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3',
+        '1. f3 e5 2. g4 Qh4#'
 	);
 
 -- GAME_SEEK
@@ -340,86 +361,6 @@ VALUES
 		2
 	);
 
-
-INSERT INTO MATCH_LOG(MATCH_ID,PLAYER_ID,ELO_SHIFT,LOG_TIME) VALUES 
-	-- shreesh vs simeon
-	(
-		'd1000000-0000-0000-0000-000000000001',
-		'a1000000-0000-0000-0000-000000000001',
-		10,
-		NOW() - INTERVAL '2 days' + INTERVAL '25 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000001',
-		'a1000000-0000-0000-0000-000000000002',
-		-10,
-		NOW() - INTERVAL '2 days' + INTERVAL '25 minutes'
-	),
-	-- simeon vs aryan
-	(
-		'd1000000-0000-0000-0000-000000000002',
-		'a1000000-0000-0000-0000-000000000002',
-		5,
-		NOW() - INTERVAL '1 day' + INTERVAL '18 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000002',
-		'a1000000-0000-0000-0000-000000000003',
-		5,
-		NOW() - INTERVAL '1 day' + INTERVAL '18 minutes'
-	),
-	-- aryan vs murali
-	(
-		'd1000000-0000-0000-0000-000000000003',
-		'a1000000-0000-0000-0000-000000000003',
-		-10,
-		NOW() - INTERVAL '3 days' + INTERVAL '40 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000003',
-		'a1000000-0000-0000-0000-000000000004',
-		50,
-		NOW() - INTERVAL '3 days' + INTERVAL '40 minutes'
-	),
-	-- murali vs shreesh
-	(
-		'd1000000-0000-0000-0000-000000000004',
-		'a1000000-0000-0000-0000-000000000004',
-		25,
-		NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000004',
-		'a1000000-0000-0000-0000-000000000001',
-		5,
-		NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'
-	),
-	-- shreesh vs aryan
-	(
-		'd1000000-0000-0000-0000-000000000005',
-		'a1000000-0000-0000-0000-000000000001',
-		5,
-		NOW() - INTERVAL '5 days' + INTERVAL '90 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000005',
-		'a1000000-0000-0000-0000-000000000003',
-		5,
-		NOW() - INTERVAL '5 days' + INTERVAL '90 minutes'
-	),
- 	-- simeon vs murali
-	(
-		'd1000000-0000-0000-0000-000000000006',
-		'a1000000-0000-0000-0000-000000000002',
-		10,
-		NOW() - INTERVAL '10 minutes'
-	),
-	(
-		'd1000000-0000-0000-0000-000000000006',
-		'a1000000-0000-0000-0000-000000000004',
-		-10,
-		NOW() - INTERVAL '10 minutes'
-	);
 	
 INSERT INTO
 	USER_STATS (
@@ -687,155 +628,3 @@ VALUES
 		'd1000000-0000-0000-0000-000000000003',
 		45.00
 	);
-
--- FUNCTION : GET_USER_STATS_BY_MODE
--- Frontend use: Stats page — see your ELO, wins, losses, draws per game mode
-
-CREATE OR REPLACE FUNCTION GET_USER_STATS_BY_MODE (P_USERNAME VARCHAR)
-RETURNS TABLE (
-    GAME_MODE VARCHAR,
-    ELO SMALLINT,
-    N_WINS INT,
-    N_LOSSES INT,
-    N_DRAWS INT
-)
-AS $$
-DECLARE
-    P_USER_ID UUID;
-BEGIN
-    SELECT ID INTO P_USER_ID FROM ACCOUNT WHERE USERNAME = P_USERNAME;
-
-    IF P_USER_ID IS NULL THEN
-        RAISE EXCEPTION 'User % not found', P_USERNAME;
-    END IF;
-
-    RETURN QUERY
-    SELECT
-        GM.NAME AS GAME_MODE,
-        US.ELO,
-        US.N_WINS,
-        US.N_LOSSES,
-        US.N_DRAWS
-    FROM (
-        SELECT * FROM ACCOUNT WHERE ID = P_USER_ID
-    ) A
-    JOIN USER_STATS US ON US.USER_ID = A.ID
-    JOIN GAME_MODE GM ON GM.ID = US.GAME_MODE_ID
-    ORDER BY GM.NAME;
-END;
-$$ LANGUAGE PLPGSQL;
-
-select * from get_user_stats_by_mode('murali');
-
--- FUNCTION : GET_PENDING_FRIEND_REQUESTS
--- Frontend use: Shows all incoming pending friend requests for a user
-
-CREATE OR REPLACE FUNCTION GET_PENDING_FRIEND_REQUESTS (P_USERNAME VARCHAR)
-RETURNS TABLE (
-    REQUEST_ID UUID,
-    FROM_USER VARCHAR,
-    AVATAR_URL TEXT,
-    REQUESTED_AT TIMESTAMPTZ
-)
-AS $$
-DECLARE
-    P_USER_ID UUID;
-BEGIN
-    SELECT ID INTO P_USER_ID FROM ACCOUNT WHERE USERNAME = P_USERNAME;
-
-    IF P_USER_ID IS NULL THEN
-        RAISE EXCEPTION 'User % not found', P_USERNAME;
-    END IF;
-
-    RETURN QUERY
-    SELECT
-        FR.ID AS REQUEST_ID,
-        SENDER.USERNAME AS FROM_USER,
-        UP.AVATAR_URL AS AVATAR_URL,
-        FR.CREATED_AT AS REQUESTED_AT
-    FROM (
-        SELECT * FROM FRIEND_REQUEST
-        WHERE TO_USER = P_USER_ID AND STATUS = 'pending'
-    ) FR
-    JOIN ACCOUNT SENDER ON SENDER.ID = FR.FROM_USER
-    JOIN USER_PROFILE UP ON UP.ID = FR.FROM_USER
-    ORDER BY FR.CREATED_AT DESC;
-
-END;
-$$ LANGUAGE PLPGSQL;
-
--- USAGE:
-SELECT
-	*
-FROM
-	GET_PENDING_FRIEND_REQUESTS ('shreesh');
-
--- FUNCTION : GET_MATCHES_BY_GAME_MODE
--- Frontend use: Players can search for matches played by a user based on game mode
-CREATE OR REPLACE FUNCTION GET_MATCHES_BY_GAME_MODE (
-    P_USERNAME VARCHAR,
-    GAME_MODE_NAME VARCHAR
-)
-RETURNS TABLE (
-    MATCH_ID UUID,
-    WHITE VARCHAR,
-    BLACK VARCHAR,
-    RESULT VARCHAR,
-    PLAYED_AT TIMESTAMPTZ,
-    LAST_POSITION TEXT
-)
-AS $$
-DECLARE
-    P_USER_ID UUID;
-    V_GAME_MODE_ID UUID;
-BEGIN
-    SELECT ID INTO P_USER_ID FROM ACCOUNT WHERE USERNAME = P_USERNAME;
-
-    IF P_USER_ID IS NULL THEN
-        RAISE EXCEPTION 'User % not found', P_USERNAME;
-    END IF;
-
-    SELECT ID INTO V_GAME_MODE_ID FROM GAME_MODE WHERE NAME = GAME_MODE_NAME;
-
-    IF V_GAME_MODE_ID IS NULL THEN
-        RAISE EXCEPTION 'Game mode % not found', GAME_MODE_NAME;
-    END IF;
-
-    RETURN QUERY
-    SELECT
-        M.MATCH_ID AS MATCH_ID,
-        WHITE.USERNAME AS WHITE,
-        BLACK.USERNAME AS BLACK,
-        M.RESULT AS RESULT,
-        M.STARTED_AT AS PLAYED_AT,
-        M.FEN AS LAST_POSITION
-    FROM (
-        SELECT
-            MA.ID AS MATCH_ID,
-            MA.WHITE_ID,
-            MA.BLACK_ID,
-            MA.RESULT,
-            MA.STARTED_AT,
-            MA.FEN
-        FROM TIME_CONTROL TC
-        JOIN (
-            SELECT *
-            FROM MATCH
-            WHERE (WHITE_ID = P_USER_ID OR BLACK_ID = P_USER_ID)
-        ) MA ON MA.TIME_CONTROL_ID = TC.ID
-        WHERE TC.GAME_MODE_ID = V_GAME_MODE_ID
-    ) M
-    JOIN ACCOUNT WHITE ON WHITE.ID = M.WHITE_ID
-    JOIN ACCOUNT BLACK ON BLACK.ID = M.BLACK_ID
-    ORDER BY M.STARTED_AT DESC;
-END;
-$$ LANGUAGE PLPGSQL;
-
--- USAGE:
-SELECT
-	*
-FROM
-	GET_MATCHES_BY_GAME_MODE ('simeon','blitz');
-
-
-
