@@ -5,6 +5,8 @@ import SignUp from './components/SignUp/SignUp'
 import Dashboard from './components/Dashboard/Dashboard'
 import Lobby from './components/Lobby/Lobby'
 import GameBoard from './components/GameBoard/GameBoard'
+import Archive from './components/Archive/Archive'
+import ReplayMatch from './components/ReplayMatch/ReplayMatch'
 // import Profile
 function ProtectedRoute({children}){
   const token = localStorage.getItem('token');
@@ -41,6 +43,19 @@ const App = () => {
       </ProtectedRoute>
     }
     ></Route>
+    <Route path='/replay/:matchId' element={
+      <ProtectedRoute>
+        <ReplayMatch/>
+      </ProtectedRoute>
+    }></Route>
+    <Route path='/archive'
+    element={
+      <ProtectedRoute>
+        <Archive/>
+        </ProtectedRoute>
+    }
+    >
+    </Route>
     </Routes>
   )
 }

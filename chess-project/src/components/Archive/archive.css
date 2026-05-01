@@ -1,0 +1,96 @@
+/* Container for the entire view */
+.archives-container {
+    min-height: 100vh;
+    padding: 2rem 3rem;
+    color: var(--blush);
+}
+
+.archives-header {
+    font-size: 2.2rem;
+    color: var(--champagne);
+    text-align: center;
+    margin-bottom: 2.5rem;
+    letter-spacing: 1px;
+}
+
+/* The Grid System */
+.archives-grid {
+    display: grid;
+    /* Automatically creates as many columns as fit, at least 280px wide */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+}
+
+/* Match Card Styling */
+.match-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.match-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--cognac);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Top Badge for Game Mode */
+.match-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: var(--champagne);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+/* Player Info */
+.match-players {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.vs {
+    color: var(--amber);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Result Text */
+.match-result {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.match-result.win { color: #4CAF50; }
+.match-result.loss { color: #FF6B6B; }
+.match-result.draw { color: #aaa; }
+
+/* Empty/Loading States */
+.no-matches, .archives-loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4rem;
+}
