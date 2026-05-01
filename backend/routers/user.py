@@ -20,7 +20,7 @@ class ProfileUpdate(BaseModel):
 
 
 def get_current_user():
-    return "murali"  # TODO replace with auth
+    return "aryan"  # TODO replace with auth
 
 
 # PROFILE
@@ -95,4 +95,4 @@ async def get_match_pgn(match_id:str):
     match = await get_match_by_id(uuid.UUID(match_id)) # Uses existing query
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
-    return {"pgn": match["pgn"]}
+    return {"pgn": match["final_pgn"]}
