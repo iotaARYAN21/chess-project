@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import uuid
 from db.queries import get_account_by_username,get_game_mode_by_name,create_match,get_user_stats_by_mode,get_time_controls_by_mode
 # from database import DBSession
+from datetime import datetime, timezone
+from http import HTTPStatus
 
 router = APIRouter(prefix='/api')
 class BotMatchRequest(BaseModel):
@@ -16,17 +18,19 @@ async def create_bot_match(request: BotMatchRequest):
     """
     Creates an instant match by querying the engine from the database.
     """
+    seek_at = datetime.now(timezone.utc)
+
     bot_account = await get_account_by_username(request.bot_username)
     game_id = await get_game_mode_by_name(request.game_mode)
     if not game_id:
-        raise HTTPException(status_code=404, detail=f"Game mode '{request.game_mode}' not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Game mode '{request.game_mode}' not found")
 
     tcid = await get_time_controls_by_mode(request.game_mode)
     if not tcid:
-        raise HTTPException(status_code=404, detail=f"No time controls found for mode '{request.game_mode}'")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No time controls found for mode '{request.game_mode}'")
 
     if not bot_account:
-        raise HTTPException(status_code=404, detail="Engine account not found in database")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Engine account not found in database")
     
     try:
         user_stats = await get_user_stats_by_mode(request.userid, request.game_mode)
@@ -35,8 +39,9 @@ async def create_bot_match(request: BotMatchRequest):
             white_id = request.userid,
             black_id=bot_account["id"],
             time_control_id=tcid[0]["id"],
-            white_elo=user_elo,
-            black_elo=3200 
+            white_elo_initial=user_elo,
+            black_elo_initial=3200,
+            started_at=seek_at,
         )
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Failed to create a match ,error: {e}")

@@ -10,6 +10,8 @@ function GameMode({id,title,subtitle,time,icon,onClick}){
         <p> {icon} </p>
     </div>
 }
+
+// NOTE: CREATION OF GAME MUST BE HANDLED HERE
 const Lobby = () => {
     const [loading,setLoading] = useState(false);
     const [botUsername,setBotUsername] = useState('stockfish_16')

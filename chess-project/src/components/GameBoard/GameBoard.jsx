@@ -9,6 +9,8 @@ const GameBoard = () => {
 game_id, white_id (Player 1), black_id (Player 2),
  moves (the PGN or move array), time_control, and result.
 */
+
+// NOTE: I NEED TO MAKE CHANGES MAINLY HERE
   const boardOptions = useMemo(() => ({
     id: 'game-board',
     position: game.fen(),
