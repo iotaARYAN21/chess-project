@@ -7,6 +7,8 @@ import Lobby from './components/Lobby/Lobby'
 import GameBoard from './components/GameBoard/GameBoard'
 import Archive from './components/Archive/Archive'
 import ReplayMatch from './components/ReplayMatch/ReplayMatch'
+import AdminDashboard from './components/AdminDashboard/Dashboard'
+
 // import Profile
 
 // TODO: MAY NEED MORE CHANGES
@@ -24,9 +26,44 @@ const App = () => {
       <Route path='/' element={<Login/>}></Route>
       <Route path='/signup' element={<SignUp/>}></Route>
     
-      <Route path='/dashboard' element={
-        <ProtectedRoute>
-          <Dashboard/>
+    <Route path='/dashboard' element={
+      <ProtectedRoute>
+        <Dashboard/>
+      </ProtectedRoute>
+    }>
+    </Route>
+
+    <Route path='/admin-dashboard' element={
+      <ProtectedRoute>
+        <AdminDashboard/>
+      </ProtectedRoute>
+    }></Route>
+
+    <Route
+    path='/lobby'
+    element={
+      <ProtectedRoute>
+        <Lobby/>
+      </ProtectedRoute>
+    }
+    ></Route>
+    <Route
+    path='/gameboard'
+    element={
+      <ProtectedRoute>
+        <GameBoard/>
+      </ProtectedRoute>
+    }
+    ></Route>
+    <Route path='/replay/:matchId' element={
+      <ProtectedRoute>
+        <ReplayMatch/>
+      </ProtectedRoute>
+    }></Route>
+    <Route path='/archive'
+    element={
+      <ProtectedRoute>
+        <Archive/>
         </ProtectedRoute>
       }></Route>
 

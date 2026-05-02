@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 from typing import Optional
+from utils import get_current_user
 
 from db.queries import (
     get_user_profile,
@@ -19,8 +20,8 @@ class ProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
 
 
-def get_current_user():
-    return "shreesh"  # TODO replace with auth
+# def get_current_user():
+#     return "shreesh"  # TODO replace with auth
 
 
 # PROFILE
@@ -37,10 +38,10 @@ async def get_user_profile_route(username: str):
 
 @router.put("/{username}/profile")
 async def update_profile(username: str, data: ProfileUpdate):
-    current_user = get_current_user()
+    # current_user = get_current_user()
 
-    if current_user != username:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    # if current_user != username:
+    #     raise HTTPException(status_code=403, detail="Not authorized")
 
     try:
         await update_user_profile(
@@ -94,5 +95,5 @@ async def get_match_pgn(match_id:str):
     import uuid
     match = await get_match_by_id(uuid.UUID(match_id)) # Uses existing query
     if not match:
-        raise HTTPException(status_code=404, detail="Match not found")
+        raise HTTPException(status_codWe=404, detail="Match not found")
     return {"pgn": match["final_pgn"]}

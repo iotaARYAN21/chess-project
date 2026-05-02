@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from db.database import init_pool, close_pool, get_pool
 from db.queries import get_account_by_id
 from routers import auth, user, social, seek, match, mode
-from utils import get_user_id
+from utils import get_current_user, get_user_id
 import uuid
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,7 +14,9 @@ async def lifespan(app: FastAPI):
     yield
     await close_pool()
 
+
 app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/health", include_in_schema=False)
 async def health_check():
@@ -24,6 +27,7 @@ async def health_check():
         return {"status": "healthy", "database": "up"}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}, 500
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,8 +45,9 @@ async def get_me(user_id: uuid.UUID = Depends(get_user_id)):
     return {"username": account["username"]}
 
 app.include_router(auth.router)
-app.include_router(user.router)
-app.include_router(social.router)
 app.include_router(mode.router)
-app.include_router(seek.router)
-app.include_router(match.router)
+app.include_router(match.router, dependencies=[Depends(get_user_id)])
+
+app.include_router(user.router, dependencies=[Depends(get_current_user)])
+app.include_router(social.router, dependencies=[Depends(get_current_user)])
+app.include_router(seek.router, dependencies=[Depends(get_current_user)])

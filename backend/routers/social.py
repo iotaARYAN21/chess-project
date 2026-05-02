@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,Depends
 from pydantic import BaseModel
 import uuid
+from utils import get_current_user
 
 from db.queries import (
     get_account_by_username,
@@ -18,10 +19,10 @@ from db.queries import (
 router = APIRouter(prefix="/social", tags=["social"])
 
 
-def get_current_user():
-    return "murali"  # TODO replace with auth
+# def get_current_user():
+#     return "murali"  # TODO replace with auth
 
-
+    
 class FriendRequestBody(BaseModel):
     to_username: str
 
@@ -33,9 +34,7 @@ class FollowBody(BaseModel):
 # FRIEND REQUEST 
 
 @router.post("/friend-request")
-async def send_request(data: FriendRequestBody):
-    from_user = get_current_user()
-
+async def send_request(data: FriendRequestBody,from_user = Depends(get_current_user)):
     if from_user == data.to_username:
         raise HTTPException(status_code=400, detail="Cannot friend yourself")
 
@@ -51,16 +50,14 @@ async def send_request(data: FriendRequestBody):
 
 
 @router.get("/friend-requests")
-async def get_requests():
-    user = get_current_user()
+async def get_requests(user = Depends(get_current_user)):
     rows = await get_pending_friend_requests(user)
 
     return [dict(r) for r in rows]
 
 
 @router.post("/friend-request/{req_id}/accept")
-async def accept_request(req_id: str):
-    user = get_current_user()
+async def accept_request(req_id: str,user = Depends(get_current_user)):
     req_uuid = uuid.UUID(req_id) 
 
     req = await get_friend_request_by_id(req_uuid)
@@ -97,16 +94,13 @@ async def cancel_request(req_id: str):
 #  FRIENDS 
 
 @router.get("/friends")
-async def get_friends_list():
-    user = get_current_user()
+async def get_friends_list(user = Depends(get_current_user)):
     rows = await get_friends(user)
 
     return [dict(r) for r in rows]
 
 @router.delete("/friends/{username}")
-async def remove_friend(username: str):
-    current_user = get_current_user()
-
+async def remove_friend(username: str,current_user = Depends(get_current_user)):
     user_acc = await get_account_by_username(current_user)
     target_acc = await get_account_by_username(username)
 
@@ -120,9 +114,7 @@ async def remove_friend(username: str):
 # FOLLOW
 
 @router.post("/follow")
-async def follow(data: FollowBody):
-    user = get_current_user()
-
+async def follow(data: FollowBody,user = Depends(get_current_user)):
     if user == data.target_username:
         raise HTTPException(status_code=400, detail="Cannot follow yourself")
 
@@ -138,9 +130,7 @@ async def follow(data: FollowBody):
 
 
 @router.delete("/follow/{username}")
-async def unfollow(username: str):
-    user = get_current_user()
-
+async def unfollow(username: str,user = Depends(get_current_user)):
     user_acc = await get_account_by_username(user)
     target_acc = await get_account_by_username(username)
 
