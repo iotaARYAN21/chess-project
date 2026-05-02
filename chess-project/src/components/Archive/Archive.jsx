@@ -9,7 +9,12 @@ const Archives = () => {
     const username = localStorage.getItem('username') || 'murali';
 
     useEffect(() => {
-        fetch(`http://localhost:8000/users/${username}/matches`)
+        fetch(`http://localhost:8000/users/${username}/matches`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
             .then(res => res.json())
             .then(data => {
                 // Sort matches by ID descending to ensure the newest matches appear first

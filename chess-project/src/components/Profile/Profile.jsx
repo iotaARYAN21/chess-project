@@ -20,8 +20,16 @@ const Profile = () => {
 
     async function fetchData() {
       try {
+
+        console.log(localStorage.getItem('token'))
+
         // 🔹 Fetch profile
-        const profileRes = await fetch(`http://localhost:8000/users/${username}`)
+        const profileRes = await fetch(`http://localhost:8000/users/${username}`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
         const profileData = await profileRes.json()
 
         if (!profileRes.ok) {
@@ -32,7 +40,12 @@ const Profile = () => {
         setProfile(profileData)
 
         // 🔹 Fetch stats
-        const statsRes = await fetch(`http://localhost:8000/users/${username}/stats`)
+        const statsRes = await fetch(`http://localhost:8000/users/${username}/stats`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
         const statsData = await statsRes.json()
 
         if (statsRes.ok) {
@@ -51,10 +64,14 @@ const Profile = () => {
 
   const updateAvatar = async (color) => {
     const username = localStorage.getItem('username')
+    console.log('In Update Avatar .....................')
 
     const res = await fetch(`http://localhost:8000/users/${username}/profile`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Authorization": `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json" 
+      },
       body: JSON.stringify({ avatar_url: color })
     })
 

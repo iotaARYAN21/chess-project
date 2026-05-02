@@ -1,0 +1,8 @@
+.dash-container{
+    width: 100vw;
+    display: flex;
+}
+.main-screen{
+    width: 70vw;
+    margin-left: 5rem;
+}

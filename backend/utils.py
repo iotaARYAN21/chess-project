@@ -1,11 +1,16 @@
 import jwt
 import os
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
+)
 from dotenv import load_dotenv, find_dotenv
 from typing import Tuple
 
 load_dotenv(find_dotenv())
+
 
 def safe_load_env_var(env_key: str) -> str:
     env_val = os.getenv(env_key)
@@ -14,8 +19,24 @@ def safe_load_env_var(env_key: str) -> str:
     return env_val
 
 
-JWT_SECRET_KEY  = safe_load_env_var("JWT_SECRET_KEY")
-JWT_ALGORITHM   = safe_load_env_var("JWT_ALGORITHM")
+JWT_SECRET_KEY = safe_load_env_var("JWT_SECRET_KEY")
+JWT_ALGORITHM = safe_load_env_var("JWT_ALGORITHM")
+
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    token = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    return token
+
+
+def decode_token(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise Exception("Token expired")
+    except jwt.InvalidTokenError:
+        raise Exception("Invalid token")
 
 
 # oauth2_scheme = OAuth2PasswordBearer(
@@ -28,19 +49,21 @@ JWT_ALGORITHM   = safe_load_env_var("JWT_ALGORITHM")
 get_cred = HTTPBearer()
 
 
-def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -> str:
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(get_cred),
+) -> str:
     """
-        oauth2_scheme injects the token
-        
-        get_identity assumes the following:
-            token type is jwt, 
-            secret is JWT_SECRET_KEY env var
-            algorithm is JWT_ALGORITHM env var
-            payload (decoded token) must have `sub`, `type` and `exp` fields
+    oauth2_scheme injects the token
 
-        decodes token using JWT_SECRET_KEY & JWT_ALGORITHM to get payload,
-        extracts `sub` & `type` from the payload and 
-        checks if present or absent
+    get_identity assumes the following:
+        token type is jwt,
+        secret is JWT_SECRET_KEY env var
+        algorithm is JWT_ALGORITHM env var
+        payload (decoded token) must have `sub`, `type` and `exp` fields
+
+    decodes token using JWT_SECRET_KEY & JWT_ALGORITHM to get payload,
+    extracts `sub` & `type` from the payload and
+    checks if present or absent
     """
     try:
         token = credentials.credentials
@@ -48,12 +71,12 @@ def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -
             jwt=token,
             key=JWT_SECRET_KEY,
             algorithms=[JWT_ALGORITHM],
-            options={"require": ["sub"]}, # strictly enforce presence of these keys
+            options={"require": ["sub"]},  # strictly enforce presence of these keys
             leeway=5,  # handles minor clock drift of 5 seconds
         )
 
     # NOTE: acc to RFC 7519 (JWT standard)
-    # reserved words 
+    # reserved words
     #       exp -> expiration time
     #       sub -> subject
     except jwt.ExpiredSignatureError:
@@ -62,7 +85,73 @@ def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -
             detail="Token expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    sub = payload.get("username")
+
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload: missing `sub` field",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not isinstance(sub, str):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return sub
+
+
+def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -> str:
+    """
+    oauth2_scheme injects the token
+
+    get_identity assumes the following:
+        token type is jwt,
+        secret is JWT_SECRET_KEY env var
+        algorithm is JWT_ALGORITHM env var
+        payload (decoded token) must have `sub`, `type` and `exp` fields
+
+    decodes token using JWT_SECRET_KEY & JWT_ALGORITHM to get payload,
+    extracts `sub` & `type` from the payload and
+    checks if present or absent
+    """
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(
+            jwt=token,
+            key=JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+            options={"require": ["sub"]},  # strictly enforce presence of these keys
+            leeway=5,  # handles minor clock drift of 5 seconds
+        )
+
+    # NOTE: acc to RFC 7519 (JWT standard)
+    # reserved words
+    #       exp -> expiration time
+    #       sub -> subject
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,22 +173,24 @@ def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -
             detail="Invalid token payload: `sub` value is not string",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     return sub
 
 
-def calculate_elos(white_rating: int, black_rating: int, result: str, k_factor:int=32) -> Tuple[int, int]:
+def calculate_elos(
+    white_rating: int, black_rating: int, result: str, k_factor: int = 32
+) -> Tuple[int, int]:
     """
-        Compute updated Elo ratings using the standard formula:  
-            * Expected score: E = 1 / (1 + 10^((R_opp - R) / 400))  
-            * New rating: R' = R + K * (S - E)  
+    Compute updated Elo ratings using the standard formula:
+        * Expected score: E = 1 / (1 + 10^((R_opp - R) / 400))
+        * New rating: R' = R + K * (S - E)
 
-        Given white and black Elo ratings and the game result ("white", "black", "draw"),
-        returns updated integer ratings for both players.
+    Given white and black Elo ratings and the game result ("white", "black", "draw"),
+    returns updated integer ratings for both players.
 
-        Only use this when game has terminated and result is not None
+    Only use this when game has terminated and result is not None
     """
-    
+
     if result == "draw":
         white_outcome = black_outcome = 0.5
     elif result == "white":
@@ -116,5 +207,3 @@ def calculate_elos(white_rating: int, black_rating: int, result: str, k_factor:i
     new_black = black_rating + k_factor * (black_outcome - black_expected)
 
     return round(new_white), round(new_black)
-
-
