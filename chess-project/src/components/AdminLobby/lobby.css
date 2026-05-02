@@ -15,17 +15,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Page */
-/* body {
-  background: linear-gradient(135deg, 0% var(--emerald), 100% var(--espresso));
-  color: var(--blush);
-} */
 
-/* Main container */
-/* .lobby {
-  min-height: 100vh;
-  padding: 2rem 3rem;
-}
 
 /* Container */
 .logs-container {
@@ -35,10 +25,11 @@
   gap: 0.5rem;
 }
 
-/* Header */
+/* Header - Updated to 5 columns */
 .log-header {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr 1fr;
+  /* Added a 5th column (1fr) for Actions */
+  grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr; 
   padding: 0.8rem 1rem;
 
   font-size: 0.75rem;
@@ -48,10 +39,11 @@
   color: rgba(255,255,255,0.5);
 }
 
-/* Row */
+/* Row - Updated to 5 columns */
 .log-row {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr 1fr;
+  /* Must match the header's column definition exactly */
+  grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr;
   align-items: center;
 
   padding: 1rem;
@@ -65,6 +57,14 @@
 
   border: 1px solid rgba(255,255,255,0.08);
   transition: all 0.2s ease;
+}
+
+/* Action Container alignment */
+.log-actions {
+  display: flex;
+  gap: 12px;     /* Adjust this value (e.g., 8px, 12px, 1rem) for more or less space */
+  justify-content: flex-start;
+  align-items: center;
 }
 
 /* Hover */
@@ -102,3 +102,74 @@
 .log-status.no {
   color: #ff5252; /* red */
 }
+
+.btn-view {
+  background: transparent;
+  border: 1px solid var(--champagne) !important;
+  color: var(--champagne);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-view:hover {
+  background: var(--champagne);
+  color: var(--espresso);
+}
+
+.btn-action {
+  background: var(--cognac);
+  color: var(--espresso);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, var(--emerald), var(--espresso));
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid var(--cognac);
+  width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-content h3 { color: var(--champagne); margin-bottom: 1rem; }
+
+.modal-group { margin: 1.5rem 0; }
+.modal-group label { display: block; font-size: 0.8rem; margin-bottom: 0.5rem; opacity: 0.7; }
+
+.modal-group select {
+  width: 100%;
+  padding: 0.6rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  border-radius: 8px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel { background: transparent; color: white; border: none; cursor: pointer; }
+.btn-confirm { background: var(--amber); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
