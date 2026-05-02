@@ -3,7 +3,7 @@ import Sidebar from "../AdminSideBar/Sidebar";
 import AdminMainContent from "../AdminMainContent/MainContent";
 import "./dashboard.css";
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("lobby");
+  const [activeTab, setActiveTab] = useState("Pending_Logs");
   return (
     <div className="dash-container">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
