@@ -1,8 +1,11 @@
-.dash-container{
-    width: 100vw;
-    display: flex;
+.dash-container {
+  width: 100vw;
+  display: flex;
+  overflow: hidden; /* prevent horizontal scroll */
 }
-.main-screen{
-    width: 70vw;
-    margin-left: 5rem;
+
+.admin-main-screen {
+  flex: 1;
+  min-width: 0; /* critical — prevents flex blowout */
+  overflow-y: auto;
 }

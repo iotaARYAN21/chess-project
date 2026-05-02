@@ -1,0 +1,104 @@
+/* :root {
+  --blush: #f9edf0;
+  --champagne: #e6c8b7;
+  --cognac: #c3955b;
+  --amber: #ba6a36;
+  --emerald: #1c3934;
+  --espresso: #261311;
+} */
+
+/* Reset */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Page */
+/* body {
+  background: linear-gradient(135deg, 0% var(--emerald), 100% var(--espresso));
+  color: var(--blush);
+} */
+
+/* Main container */
+/* .lobby {
+  min-height: 100vh;
+  padding: 2rem 3rem;
+}
+
+/* Container */
+.logs-container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Header */
+.log-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 2fr 1fr;
+  padding: 0.8rem 1rem;
+
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  color: rgba(255,255,255,0.5);
+}
+
+/* Row */
+.log-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 2fr 1fr;
+  align-items: center;
+
+  padding: 1rem;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.06),
+    rgba(195, 149, 91, 0.10)
+  );
+
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.log-row:hover {
+  transform: translateX(4px);
+  border-color: var(--cognac);
+}
+
+/* Columns */
+.log-user {
+  font-weight: 600;
+  color: var(--champagne);
+}
+
+.log-score {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.log-time {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Status */
+.log-status {
+  font-weight: 600;
+}
+
+/* Status colors */
+.log-status.yes {
+  color: #4caf50; /* green */
+}
+
+.log-status.no {
+  color: #ff5252; /* red */
+}
