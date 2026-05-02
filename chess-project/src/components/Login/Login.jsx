@@ -6,12 +6,10 @@ const Login = () => {
 
   const navigate = useNavigate();
   const [email,setEmail] = useState('');
-  const [name,setName] = useState('');
   const [pwd,setPwd] = useState('');
   const [error,setError] = useState('');
   async function handleLogin(){
     console.log(email);
-    console.log(name);
     console.log(pwd);
     try{
       const resp = await fetch('http://localhost:8000/auth/login',{
@@ -49,12 +47,6 @@ const Login = () => {
       <h1>4Chess</h1>
       <div className="l-details">
         <h2>Welcome Back</h2>
-        <input 
-        type="text" 
-        id='name' 
-        placeholder='Name'
-        onChange={(e)=>setName(e.target.value)}
-        />
         <input 
         type="email" 
         id='email' 

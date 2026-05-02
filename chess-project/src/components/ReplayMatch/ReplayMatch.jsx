@@ -12,7 +12,12 @@ const ReplayMatch = () => {
     const navigate = useNavigate();
     useEffect(() => {
         // Fetch PGN for this specific match
-        fetch(`http://localhost:8000/users/match/${matchId}/pgn`)
+        fetch(`http://localhost:8000/users/match/${matchId}/pgn`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
             .then(res => res.json())
             .then(data => {
                 const chess = new Chess();
