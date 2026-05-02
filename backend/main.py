@@ -46,7 +46,7 @@ async def get_me(user_id: uuid.UUID = Depends(get_user_id)):
 
 app.include_router(auth.router)
 app.include_router(mode.router)
-app.include_router(match.router, dependencies=[Depends(get_user_id)])
+app.include_router(match.router)
 
 app.include_router(user.router, dependencies=[Depends(get_current_user)])
 app.include_router(social.router, dependencies=[Depends(get_current_user)])
