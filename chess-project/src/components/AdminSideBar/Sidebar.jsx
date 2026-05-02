@@ -4,10 +4,13 @@ const Sidebar = ({activeTab,setActiveTab}) => {
   const navItems= [
     { id: 'lobby', label: 'Lobby', icon: 'grid-icon' },
     ];
+
+    const username = localStorage.getItem('username');
+
     return (
         <div className="sidebar">
             <div className="side-profile">
-                <h2>Profile Picture</h2>
+                <h6>{username}</h6>
             </div>
             <nav className='side-nav'>
                 {navItems.map((item)=>(

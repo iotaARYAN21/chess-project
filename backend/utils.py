@@ -8,9 +8,9 @@ from fastapi.security import (
 )
 from dotenv import load_dotenv, find_dotenv
 from typing import Tuple
+from enum import Enum
 
 load_dotenv(find_dotenv())
-
 
 def safe_load_env_var(env_key: str) -> str:
     env_val = os.getenv(env_key)
@@ -18,6 +18,10 @@ def safe_load_env_var(env_key: str) -> str:
         raise RuntimeError(f"{env_key} env var is not set")
     return env_val
 
+class AdminLevel(str, Enum):
+    MODERATOR = 1
+    ADMIN = 2
+    SUPERADMIN = 3
 
 JWT_SECRET_KEY = safe_load_env_var("JWT_SECRET_KEY")
 JWT_ALGORITHM = safe_load_env_var("JWT_ALGORITHM")
@@ -47,7 +51,110 @@ def decode_token(token: str):
 # )
 
 get_cred = HTTPBearer()
+class AdminChecker:
+    def __init__(self, admin_level_req: AdminLevel):
+        # Store the required level when the dependency is declared
+        self.admin_level_req = admin_level_req
 
+    async def __call__(
+        self, 
+        credentials: HTTPAuthorizationCredentials = Depends(get_cred)
+    ):
+        """
+        oauth2_scheme injects the token
+
+        get_identity assumes the following:
+            token type is jwt,
+            secret is JWT_SECRET_KEY env var
+            algorithm is JWT_ALGORITHM env var
+            payload (decoded token) must have `sub`, `type` and `exp` fields
+
+        decodes token using JWT_SECRET_KEY & JWT_ALGORITHM to get payload,
+        extracts `sub` & `type` from the payload and
+        checks if present or absent
+        """
+        try:
+            token = credentials.credentials
+            payload = jwt.decode(
+                jwt=token,
+                key=JWT_SECRET_KEY,
+                algorithms=[JWT_ALGORITHM],
+                options={"require": ["sub","username","role","admin_level"]},  # strictly enforce presence of these keys
+                leeway=5,  # handles minor clock drift of 5 seconds
+            )
+
+        # NOTE: acc to RFC 7519 (JWT standard)
+        # reserved words
+        #       exp -> expiration time
+        #       sub -> subject
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        except jwt.InvalidTokenError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        sub = payload.get("username")
+        role = payload.get("role")
+        admin_level = payload.get("admin_level")
+        
+        if not admin_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin privileges required",
+            )
+
+        if admin_level == "moderator":
+            admin_level_value = AdminLevel.MODERATOR.value
+        elif admin_level == "admin":
+            admin_level_value = AdminLevel.ADMIN.value
+        elif admin_level == "superadmin":
+            admin_level_value = AdminLevel.SUPERADMIN.value
+        else:     
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin privileges required",
+            )
+
+        if not role or role != "sysadmin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin privileges required",
+            )
+            
+        if not sub:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload: missing `sub` field",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if not isinstance(sub, str):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
+        if admin_level_value < self.admin_level_req.value:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Higher level privileges required",
+            )
+            
+        return payload
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(get_cred),

@@ -102,7 +102,7 @@ async def get_player_by_email(email: str) -> Optional[asyncpg.Record]:
             """,
             email,
         )
-        
+
 async def get_admin_by_email(email: str) -> Optional[asyncpg.Record]:
     """Look up a player by name (used during login)."""
     async with get_pool().acquire() as conn:
@@ -791,7 +791,7 @@ async def send_friend_request(from_id: uuid.UUID, to_id: uuid.UUID) -> uuid.UUID
             """,
             from_id, to_id,
         )
-    
+
 async def get_friend_request_by_id(request_id: uuid.UUID,) -> Optional[asyncpg.Record]:
     """
     Fetch a friend request by its UUID.
@@ -1004,7 +1004,7 @@ async def get_unresolved_cheat_logs() -> list:
         return await conn.fetch(
             """
             SELECT acl.id, a.username, acl.match_id,
-                   acl.sus_score, acl.added_at
+                   acl.sus_score, acl.added_at, acl.user_id
             FROM   anti_cheat_log acl
             JOIN   account        a ON a.id = acl.user_id
             WHERE  acl.resolved = FALSE
@@ -1027,6 +1027,21 @@ async def resolve_cheat_log(
             WHERE  id          = $1
             """,
             log_id, admin_id,
+        )
+
+
+async def resolve_anti_cheat_log_with_ban(
+    log_id: uuid.UUID,
+    user_id: uuid.UUID,
+    admin_id: uuid.UUID,
+    ban_type: str,
+    reason: Optional[str],
+    expires_at: Optional[datetime],
+) -> None:
+    async with get_pool().acquire() as conn:
+        await conn.execute(
+            "CALL resolve_anti_cheat_log($1, $2, $3, $4, $5, $6)",
+            log_id, user_id, admin_id, ban_type, expires_at, reason,
         )
 
 

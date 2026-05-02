@@ -177,3 +177,57 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE resolve_anti_cheat_log(
+    p_log_id       UUID,
+    p_user_id      UUID,
+    p_admin_id     UUID,
+    p_ban_type     TEXT,        -- 'none' | 'temporary' | 'permanent'
+    p_expires_at   TIMESTAMPTZ, -- NULL for permanent bans
+    p_reason       TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Lock the log row to prevent concurrent resolution
+    PERFORM id
+    FROM ANTI_CHEAT_LOG
+    WHERE id       = p_log_id
+      AND USER_ID  = p_user_id
+      AND RESOLVED = FALSE
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Log % not found, does not belong to account %, or is already resolved.',
+            p_log_id, p_user_id;
+    END IF;
+
+    -- 2. Conditionally insert a ban (only when ban_type != 'none')
+    INSERT INTO BAN (
+        ACCOUNT_ID,
+        BANNED_BY,
+        BAN_TYPE,
+        REASON,
+        EXPIRES_AT
+    )
+    SELECT
+        p_user_id,
+        p_admin_id,
+        CASE
+            WHEN p_ban_type = 'permanent' THEN 'permanent'
+            ELSE 'temporary'
+        END,
+        p_reason,
+        p_expires_at
+    WHERE p_ban_type <> 'none';
+
+    -- 3. Mark the log as resolved
+    UPDATE ANTI_CHEAT_LOG
+    SET
+        RESOLVED    = TRUE,
+        RESOLVED_BY = p_admin_id,
+        RESOLVED_AT = NOW()
+    WHERE id = p_log_id;
+
+END;
+$$;
