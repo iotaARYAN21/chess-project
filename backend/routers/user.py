@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 from typing import Optional
+from utils import get_current_user
 
 from db.queries import (
     get_user_profile,
@@ -19,8 +20,8 @@ class ProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
 
 
-def get_current_user():
-    return "shreesh"  # TODO replace with auth
+# def get_current_user():
+#     return "shreesh"  # TODO replace with auth
 
 
 # PROFILE
@@ -37,10 +38,10 @@ async def get_user_profile_route(username: str):
 
 @router.put("/{username}/profile")
 async def update_profile(username: str, data: ProfileUpdate):
-    current_user = get_current_user()
+    # current_user = get_current_user()
 
-    if current_user != username:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    # if current_user != username:
+    #     raise HTTPException(status_code=403, detail="Not authorized")
 
     try:
         await update_user_profile(

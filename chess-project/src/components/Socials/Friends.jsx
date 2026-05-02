@@ -18,12 +18,28 @@ const Friends = () => {
   const username = localStorage.getItem('username')
 
   useEffect(() => {
+    console.log('sfnklsdnfklsndlfn',localStorage.getItem('token'))
     async function fetchData() {
       try {
         const [fRes, rRes, pRes] = await Promise.all([
-          fetch("http://localhost:8000/social/friends"),
-          fetch("http://localhost:8000/social/friend-requests"),
-          fetch(`http://localhost:8000/users/${username}`)
+          fetch("http://localhost:8000/social/friends",{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }}),
+          fetch("http://localhost:8000/social/friend-requests",{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }}),
+          fetch(`http://localhost:8000/users/${username}`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
         ])
 
         if (fRes.ok) setFriends(await fRes.json())
@@ -47,8 +63,18 @@ const Friends = () => {
   const handleViewFriend = async (friendUsername) => {
     try {
       const [profileRes, statsRes] = await Promise.all([
-        fetch(`http://localhost:8000/users/${friendUsername}`),
-        fetch(`http://localhost:8000/users/${friendUsername}/stats`)
+        fetch(`http://localhost:8000/users/${friendUsername}`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }}),
+        fetch(`http://localhost:8000/users/${friendUsername}/stats`,{
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }})
       ])
 
       if (profileRes.ok) {
@@ -80,7 +106,11 @@ const Friends = () => {
     const req = requests.find(r => r.id === id)
 
     const res = await fetch(`http://localhost:8000/social/friend-request/${id}/accept`, {
-      method: "POST"
+      method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }
     })
 
     if (!res.ok) {
@@ -91,7 +121,13 @@ const Friends = () => {
     setRequests(prev => prev.filter(r => r.id !== id))
 
     if (req) {
-      const userRes = await fetch(`http://localhost:8000/users/${req.from_username}`)
+      const userRes = await fetch(`http://localhost:8000/users/${req.from_username}`,{
+      method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }
+    })
       
       if (userRes.ok) {
         const userData = await userRes.json()
@@ -109,7 +145,11 @@ const Friends = () => {
 
   const handleDecline = async (id) => {
     await fetch(`http://localhost:8000/social/friend-request/${id}/decline`, {
-      method: "POST"
+      method: "POST",        
+      headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json"
+        }
     })
 
     setRequests(prev => prev.filter(r => r.id !== id))
@@ -120,7 +160,8 @@ const Friends = () => {
 
     const res = await fetch("http://localhost:8000/social/friend-request", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {  "Authorization": `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json" },
       body: JSON.stringify({ to_username: searchUser })
     })
 
@@ -140,7 +181,9 @@ const Friends = () => {
     if (!confirmDelete) return
 
     const res = await fetch(`http://localhost:8000/social/friends/${username}`, {
-      method: "DELETE"
+      method: "DELETE",      
+      headers: {  "Authorization": `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json" },
     })
 
     if (res.ok) {

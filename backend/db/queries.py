@@ -102,7 +102,20 @@ async def get_player_by_email(email: str) -> Optional[asyncpg.Record]:
             """,
             email,
         )
-
+        
+async def get_admin_by_email(email: str) -> Optional[asyncpg.Record]:
+    """Look up a player by name (used during login)."""
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT a.id, a.username, a.is_active,
+                   ad.admin_level,ad.email, ad.password_hash
+            FROM   admin_account ad
+            JOIN   account  a  ON a.id = ad.id
+            WHERE  ad.email = $1
+            """,
+            email,
+        )
 
 # ===========================================================================
 # ENGINE ACCOUNT

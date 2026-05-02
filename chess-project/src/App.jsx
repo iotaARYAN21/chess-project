@@ -7,6 +7,8 @@ import Lobby from './components/Lobby/Lobby'
 import GameBoard from './components/GameBoard/GameBoard'
 import Archive from './components/Archive/Archive'
 import ReplayMatch from './components/ReplayMatch/ReplayMatch'
+import AdminDashboard from './components/AdminDashboard/Dashboard'
+
 // import Profile
 function ProtectedRoute({children}){
   const token = localStorage.getItem('token');
@@ -27,6 +29,13 @@ const App = () => {
       </ProtectedRoute>
     }>
     </Route>
+
+    <Route path='/admin-dashboard' element={
+      <ProtectedRoute>
+        <AdminDashboard/>
+      </ProtectedRoute>
+    }></Route>
+
     <Route
     path='/lobby'
     element={
