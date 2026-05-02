@@ -29,7 +29,7 @@ const Archives = () => {
     }, [username]);
 
     if (loading) return <div className="archives-loading">Loading History...</div>;
-
+    // console.log(matches[0].white_username)
     return (
         <div className="archives-container">
             <h2 className="archives-header">Match History</h2>
@@ -38,7 +38,9 @@ const Archives = () => {
                     <div 
                         key={match.id} 
                         className="match-card" 
-                        onClick={() => navigate(`/replay/${match.id}`)}
+                        onClick={() => navigate(`/replay/${match.id}`,{
+                            state:{white:match.white_username,black:match.black_username}
+                        })}
                     >
                         <div className="match-tag">{match.game_mode_name}</div>
                         <div className="match-players">
