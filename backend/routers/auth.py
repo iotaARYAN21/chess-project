@@ -33,6 +33,7 @@ async def login(data:LoginRequest):
         return {
             "access_token":access_token,
             "token-type":"bearer",
+            "username":admin["username"],
             "role":"sysadmin"
         }
 
