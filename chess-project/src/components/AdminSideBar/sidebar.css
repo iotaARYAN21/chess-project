@@ -1,0 +1,89 @@
+:root {
+  --blush: #f9edf0;
+  --champagne: #e6c8b7;
+  --cognac: #c3955b;
+  --amber: #ba6a36;
+  --emerald: #1c3934;
+  --espresso: #261311;
+}
+
+/* Sidebar container */
+.sidebar {
+  width: 240px;
+  height: 100vh;
+
+  background: linear-gradient(
+    180deg,
+    var(--cognac),
+    var(--amber)
+  );
+
+  color: white;
+  display: flex;
+  flex-direction: column;
+
+  padding: 1.5rem 1rem;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+}
+
+/* Title / profile section */
+.side-profile {
+  font-size: 1.6rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+/* Nav container */
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+.side-btn {
+  width: 100%;
+  height: 3rem;
+
+  border-radius: 10px;
+  border: none;
+
+  background: transparent;
+  color: rgba(255,255,255,0.85);
+
+  text-align: left;
+  padding: 0 1rem;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.side-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  transform: translateX(4px);
+}
+
+/* Active state (important) */
+.side-btn.active {
+  background: rgba(255,255,255,0.25);
+  color: white;
+  font-weight: 600;
+
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+/* Optional: subtle divider */
+.side-profile::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  margin-top: 1rem;
+}
