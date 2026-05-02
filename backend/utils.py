@@ -88,6 +88,27 @@ def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -
     
     return uuid.UUID(sub)
 
+def get_user_id_from_token(token: str) -> uuid.UUID:
+    """Same logic as get_user_id but takes a raw token string — for WebSocket use."""
+    try:
+        payload = jwt.decode(
+            jwt=token,
+            key=JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+            options={"require": ["sub"]},
+            leeway=5,
+        )
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
+
+    sub = payload.get("sub")
+    if not sub or not isinstance(sub, str):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token payload")
+
+    return uuid.UUID(sub)
+
 
 def calculate_elos(white_rating: int, black_rating: int, result: str, k_factor:int=32) -> Tuple[int, int]:
     """
@@ -119,3 +140,26 @@ def calculate_elos(white_rating: int, black_rating: int, result: str, k_factor:i
     return round(new_white), round(new_black)
 
 
+import json
+from fastapi import WebSocket
+from typing import defaultdict
+
+class ConnectionManager:
+    def __init__(self):
+        self.rooms: dict[str, list[WebSocket]] = defaultdict(list)
+
+    async def connect(self, websocket: WebSocket, match_id: str):
+        await websocket.accept()
+        self.rooms[match_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, match_id: str):
+        self.rooms[match_id].remove(websocket)
+        if not self.rooms[match_id]:
+            del self.rooms[match_id]
+
+    async def broadcast_to_match(self, match_id: str, payload: dict):
+        for ws in self.rooms.get(match_id, []):
+            try:
+                await ws.send_text(json.dumps(payload, default=str))
+            except Exception:
+                pass

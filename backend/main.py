@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
-from db.database import init_pool , close_pool, get_pool
-from routers import auth, user, social, seek, match
-
+from db.database import init_pool, close_pool, get_pool
+from db.queries import get_account_by_id
+from routers import auth, user, social, seek, match, mode
+from utils import get_user_id
+import uuid
 
 @asynccontextmanager
-async def lifespan(app:FastAPI):
+async def lifespan(app: FastAPI):
     await init_pool()
     yield
     await close_pool()
@@ -32,12 +33,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/me")
+async def get_me(user_id: uuid.UUID = Depends(get_user_id)):
+    account = await get_account_by_id(user_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"username": account["username"]}
 
-
-# Routers
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(social.router)
+app.include_router(mode.router)
 app.include_router(seek.router)
 app.include_router(match.router)
-

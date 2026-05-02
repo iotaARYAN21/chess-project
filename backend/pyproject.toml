@@ -11,5 +11,5 @@ dependencies = [
     "PyJWT==2.12.1",
     "python-chess>=1.999",
     "sqlalchemy>=2.0.48",
-    "uvicorn>=0.42.0",
+    "uvicorn[standard]>=0.42.0",
 ]

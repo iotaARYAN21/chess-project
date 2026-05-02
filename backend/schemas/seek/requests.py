@@ -5,7 +5,7 @@ class BotMatchRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
         frozen=True,
-        strict=True,
+        # strict=True,
     )
 
     time_control_id: uuid.UUID

@@ -1,87 +1,71 @@
-from fastapi import APIRouter,HTTPException
-from pydantic import BaseModel
-import uuid
-from db.queries import get_account_by_username,get_game_mode_by_name,create_match,get_user_stats_by_mode,get_time_controls_by_mode
-# from database import DBSession
-from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, Depends
 from http import HTTPStatus
+from pydantic import ValidationError
+from datetime import datetime, timezone
+import uuid
+from utils import get_user_id
+from db.queries import get_account_by_username, get_time_control_by_id, \
+    get_user_stats_by_game_mode_id, create_match, get_account_by_id
+from schemas.seek.requests import BotMatchRequest
+from models.game import TimeControlModel
 
 router = APIRouter(prefix='/api')
-class BotMatchRequest(BaseModel):
-    game_mode:str
-    bot_username:str
-    userid:uuid.UUID
-    # time_control_id:uuid.UUID
+
+# def get_user_id():
+#     return uuid.UUID("a1000000-0000-0000-0000-000000000001")
 
 @router.post('/seek')
-async def create_bot_match(request: BotMatchRequest):
-    """
-    Creates an instant match by querying the engine from the database.
-    """
+async def create_bot_match(
+    request: BotMatchRequest, 
+    user_id: uuid.UUID = Depends(get_user_id)
+):
     seek_at = datetime.now(timezone.utc)
 
-    bot_account = await get_account_by_username(request.bot_username)
-    game_id = await get_game_mode_by_name(request.game_mode)
-    if not game_id:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Game mode '{request.game_mode}' not found")
+    user_account_record = await get_account_by_id(user_id)
+    if not user_account_record:
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, f"user `account` record not found - (Inconsistent state)")
 
-    tcid = await get_time_controls_by_mode(request.game_mode)
-    if not tcid:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No time controls found for mode '{request.game_mode}'")
+    # fetch time_control record and check its existence
+    time_control_record = await get_time_control_by_id(request.time_control_id)
+    if not time_control_record: 
+        raise HTTPException(HTTPStatus.FORBIDDEN, f"`time_control` record not found - Illegal creation request")
+    
+    # validate time_control record against TimeControlModel (db model)
+    try:
+        time_control : TimeControlModel = TimeControlModel.model_validate(dict(time_control_record))
+    except ValidationError as e:
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR,f"Data integrity error: `time_control` record corrupted {e}")
 
-    if not bot_account:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Engine account not found in database")
+    # fetch bot account record and check its existence
+    bot_account_record = await get_account_by_username(request.bot_username)
+    if not bot_account_record:
+        raise HTTPException(HTTPStatus.FORBIDDEN, "bot `account` record not found - Illegal creation request")
+    
+    # TODO: validation of bot account record is still left
+
+    # fetch user stats and check
+    # NOTE: whenever a user is created its stats shd be filled accordingly
+    try:
+        user_stat = await get_user_stats_by_game_mode_id(user_id, time_control.game_mode_id)
+        user_elo = user_stat[0]["elo"]
+    except Exception as e:
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, f"Failed to get stats of user for game_mode {time_control.game_mode_id}: {e}")
     
     try:
-        user_stats = await get_user_stats_by_mode(request.userid, request.game_mode)
-        user_elo = user_stats[0]["elo"] # as returns a list and according to relational model , elo is on 2nd index
-        new_game_id = await create_match( # returns uniq id
-            white_id = request.userid,
-            black_id=bot_account["id"],
-            time_control_id=tcid[0]["id"],
+        new_game_id = await create_match(
+            white_id=user_id,
+            black_id=bot_account_record["id"],
+            time_control_id=request.time_control_id,
             white_elo_initial=user_elo,
-            black_elo_initial=3200,
+            black_elo_initial=user_elo + 10,
             started_at=seek_at,
         )
     except Exception as e:
-        raise HTTPException(status_code=500,detail=f"Failed to create a match ,error: {e}")
-    
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, f"Failed to create match: {e}")
+
     return {
-        "status":"matched",
-        "game_id":str(new_game_id),
-        "opponent_name":bot_account["username"],
-        "opponent_id":str(bot_account["id"])
+        "status": "matched",
+        "game_id": str(new_game_id),
+        "opponent_name": bot_account_record["username"],
+        "opponent_id": bot_account_record["id"],
     }
-
-
-# @router.post('/seek')
-# async def create_bot_match(request: BotMatchRequest, db=Depends(get_db)):
-#     """
-#     Creates an instant match by querying the engine from the database.
-#     """
-    
-#     # 2. Query ACCOUNT table to find the bot
-#     # This is pseudo-code depending on if you use SQLAlchemy, asyncpg, etc.
-#     # SQL equivalent: SELECT id, username FROM account WHERE username = 'GM_Magnus90' AND player_type = 'engine'
-    
-#     bot_account = db.execute(
-#         "SELECT id, username FROM ACCOUNT WHERE username = :username", 
-#         {"username": request.bot_username}
-#     ).fetchone()
-
-#     if not bot_account:
-#         raise HTTPException(status_code=404, detail="Engine account not found in database")
-    
-#     new_game_id = str(uuid.uuid4())
-    
-#     # 3. Database Logic Goes Here:
-#     # INSERT INTO MATCH (id, status, fen, black_id...) 
-#     # VALUES (new_game_id, 'ongoing', 'rnbqkbnr/...', bot_account.id) 
-    
-#     # 4. Return the actual DB data to the frontend
-#     return {
-#         "status": "matched",
-#         "game_id": new_game_id,
-#         "opponent_name": bot_account.username,
-#         "opponent_id": str(bot_account.id)
-#     }

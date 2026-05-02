@@ -150,6 +150,16 @@ async def get_all_engines() -> list:
             """
         )
 
+async def get_engine_config_from_account_id(account_id: uuid.UUID):
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT e.id, e.version, e.depth
+            FROM   engine_account e
+            WHERE e.id = $1
+            """,
+            account_id
+        )
 
 # ===========================================================================
 # USER PROFILE

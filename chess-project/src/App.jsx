@@ -8,6 +8,8 @@ import GameBoard from './components/GameBoard/GameBoard'
 import Archive from './components/Archive/Archive'
 import ReplayMatch from './components/ReplayMatch/ReplayMatch'
 // import Profile
+
+// TODO: MAY NEED MORE CHANGES
 function ProtectedRoute({children}){
   const token = localStorage.getItem('token');
   if(!token){
@@ -15,47 +17,47 @@ function ProtectedRoute({children}){
   }
   return children;
 }
+
 const App = () => {
   return (
     <Routes>
       <Route path='/' element={<Login/>}></Route>
-      <Route path='/signup' element={<SignUp/>}/>
+      <Route path='/signup' element={<SignUp/>}></Route>
     
-    <Route path='/dashboard' element={
-      <ProtectedRoute>
-        <Dashboard/>
-      </ProtectedRoute>
-    }>
-    </Route>
-    <Route
-    path='/lobby'
-    element={
-      <ProtectedRoute>
-        <Lobby/>
-      </ProtectedRoute>
-    }
-    ></Route>
-    <Route
-    path='/gameboard'
-    element={
-      <ProtectedRoute>
-        <GameBoard/>
-      </ProtectedRoute>
-    }
-    ></Route>
-    <Route path='/replay/:matchId' element={
-      <ProtectedRoute>
-        <ReplayMatch/>
-      </ProtectedRoute>
-    }></Route>
-    <Route path='/archive'
-    element={
-      <ProtectedRoute>
-        <Archive/>
+      <Route path='/dashboard' element={
+        <ProtectedRoute>
+          <Dashboard/>
         </ProtectedRoute>
-    }
-    >
-    </Route>
+      }></Route>
+
+      <Route
+      path='/lobby'
+      element={
+        <ProtectedRoute>
+          <Lobby/>
+        </ProtectedRoute>
+      }></Route>
+
+      <Route
+      path='/gameboard'
+      element={
+        <ProtectedRoute>
+          <GameBoard/>
+        </ProtectedRoute>
+      }></Route>
+
+      <Route path='/replay/:matchId' element={
+        <ProtectedRoute>
+          <ReplayMatch/>
+        </ProtectedRoute>
+      }></Route>
+
+      <Route path='/archive'element={
+        <ProtectedRoute>
+          <Archive/>
+        </ProtectedRoute>
+      }></Route>
+
     </Routes>
   )
 }
