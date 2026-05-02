@@ -94,5 +94,5 @@ async def get_match_pgn(match_id:str):
     import uuid
     match = await get_match_by_id(uuid.UUID(match_id)) # Uses existing query
     if not match:
-        raise HTTPException(status_code=404, detail="Match not found")
+        raise HTTPException(status_codWe=404, detail="Match not found")
     return {"pgn": match["final_pgn"]}
