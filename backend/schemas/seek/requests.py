@@ -1,10 +1,12 @@
+import uuid
 from pydantic import BaseModel, ConfigDict
 
-class MatchMoveRequest(BaseModel):
+class BotMatchRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
         frozen=True,
         strict=True,
     )
 
-    uci: str
+    time_control_id: uuid.UUID
+    bot_username: str

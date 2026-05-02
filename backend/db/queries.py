@@ -216,7 +216,21 @@ async def get_user_stats_by_mode(userid:uuid.UUID,game_mode:str) -> list:
             userid,
             game_mode,
         )
-
+  
+async def get_user_stats_by_game_mode_id(userid:uuid.UUID,game_mode_id:uuid.UUID) -> list:
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT us.elo, us.n_wins, us.n_losses, us.n_draws
+            FROM user_stats us
+            WHERE us.user_id = $1::uuid
+              AND us.game_mode_id = $2::uuid
+            """
+            ,
+            userid,
+            game_mode_id,
+        )
+    
 async def get_user_stats_by_name(username: str):
     async with get_pool().acquire() as conn:
         return await conn.fetch(
@@ -314,6 +328,18 @@ async def get_time_controls_by_mode(game_mode_name: str) -> list:
             game_mode_name,
         )
 
+async def get_time_controls_by_game_mode_id(game_mode_id: str) -> list:
+    """All time controls that belong to a given game mode id."""
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT tc.id, tc.game_mode_id, tc.base_time, tc.incr_time
+            FROM   time_control tc
+            WHERE tc.game_mode_id = $1
+            ORDER  BY tc.base_time
+            """,
+            game_mode_id,
+        )
 
 async def get_time_control_by_id(tc_id: uuid.UUID) -> Optional[asyncpg.Record]:
     async with get_pool().acquire() as conn:

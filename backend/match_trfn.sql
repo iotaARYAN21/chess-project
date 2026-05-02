@@ -89,6 +89,7 @@ DECLARE
     v_history TEXT[];
     v_mode_id UUID;
 BEGIN
+-- NOTE: already handling engines here i.e only upserting player stats
     IF (NEW.status = 'completed' AND OLD.status = 'active') THEN
         
         -- A. DATA GATHERING

@@ -1,5 +1,6 @@
 import jwt
 import os
+import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv, find_dotenv
@@ -28,7 +29,7 @@ JWT_ALGORITHM   = safe_load_env_var("JWT_ALGORITHM")
 get_cred = HTTPBearer()
 
 
-def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -> str:
+def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -> uuid.UUID:
     """
         oauth2_scheme injects the token
         
@@ -85,7 +86,7 @@ def get_user_id(credentials: HTTPAuthorizationCredentials = Depends(get_cred)) -
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    return sub
+    return uuid.UUID(sub)
 
 
 def calculate_elos(white_rating: int, black_rating: int, result: str, k_factor:int=32) -> Tuple[int, int]:
