@@ -5,7 +5,7 @@ import MainContent from '../MainContent/MainContent';
 import './dashboard.css'
 const Dashboard = () => {
   const location = useLocation();
-  const initialTab =location.state?.activeTab || 'lobby';
+  const initialTab =location.state?.activeTab || 'Pending_Logs';
   const [activeTab,setActiveTab] = useState(initialTab);
   return (
     <div className='dash-container'>

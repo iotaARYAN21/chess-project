@@ -1,10 +1,13 @@
 import React from 'react'
 import AdminLobby from '../AdminLobby/Lobby'
+import AdminLogs from '../AdminLogs/AdminLogs'
 
 const AdminMainContent = ({activeTab}) => {
   switch (activeTab){
-    case 'lobby':
+    case 'Pending_Logs':
         return <AdminLobby/>
+    case 'All_Logs':
+        return <AdminLogs/>
   }
 }
 

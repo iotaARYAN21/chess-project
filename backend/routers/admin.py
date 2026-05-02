@@ -10,6 +10,7 @@ from db.queries import (
     log_suspicious_activity, 
     get_unresolved_cheat_logs, 
     resolve_cheat_log,
+    get_all_cheat_logs,
     resolve_anti_cheat_log_with_ban
 )
 from utils import AdminLevel, AdminChecker
@@ -62,12 +63,26 @@ def _db_ban_type(ban_type: BanType) -> str:
     return "temporary"
 
 
-@router.get("/cheat-logs")
-async def get_cheat_logs(payload = Depends(AdminChecker(AdminLevel.MODERATOR))):
+@router.get("/unresolved-cheat-logs")
+async def get_unresolved_cheat_logs_endpoint(payload = Depends(AdminChecker(AdminLevel.MODERATOR))):
     """Fetches all unresolved suspicious activity logs for the dashboard."""
-    logs = await get_unresolved_cheat_logs()
+    try:
+        logs = await get_unresolved_cheat_logs()
 
-    return [dict(log) for log in logs]
+        return [dict(log) for log in logs]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/cheat-logs")
+async def get_all_cheat_logs_endpoint(payload = Depends(AdminChecker(AdminLevel.MODERATOR))):
+    """Fetches all unresolved suspicious activity logs for the dashboard."""
+    try:
+        logs = await get_all_cheat_logs()
+
+        return [dict(log) for log in logs]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.post(
     "/anticheat-resolve",
@@ -97,10 +112,7 @@ async def resolve_anticheat_endpoint(
     except LookupError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise
-        # raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return ResolveResponse(
         success     = True,

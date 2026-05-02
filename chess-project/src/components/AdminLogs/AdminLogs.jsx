@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
-import "./lobby.css";
+import "./adminlogs.css";
 import { useNavigate } from "react-router-dom";
 
-// const BAN_TYPE_MAP = {
-//   none: "none",
-//   "24h": "24h",
-//   "7d": "7d",
-//   permanent: "PERMANENT",
-// };
-
-const AdminLobby = () => {
+const AdminLogs = () => {
   const [logs, setLogs] = useState([]); // store cheat logs
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,16 +17,13 @@ const AdminLobby = () => {
   useEffect(() => {
     async function fetchLogs() {
       try {
-        const res = await fetch(
-          "http://localhost:8000/admin/unresolved-cheat-logs",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+        const res = await fetch("http://localhost:8000/admin/cheat-logs", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        );
+        });
 
         const data = await res.json();
 
@@ -127,39 +117,61 @@ const AdminLobby = () => {
           <div>Username</div>
           <div>Score</div>
           <div>Time</div>
+          <div>Resolved By</div>
+          <div>Resolved At</div>
+          <div>Status</div>
           <div>Actions</div>
         </div>
 
         {/* Rows */}
         {logs.length > 0 ? (
-          logs.map((log) => (
-            <div key={log.id} className="log-row">
-              <div className="log-user">{log.username}</div>
-              <div className="log-score">{log.sus_score}</div>
-              <div className="log-time">
-                {new Date(log.added_at).toLocaleString()}
-              </div>
-              <div className="log-actions">
-                <button
-                  className="btn-view"
-                  onClick={() => navigate(`/replay/${log.match_id}`)}
-                >
-                  View Game
-                </button>
-                {!log.resolved && (
-                  <button
-                    className="btn-action"
-                    onClick={() => {
-                      setSelectedLog(log);
-                      setResolveError("");
-                    }}
-                  >
-                    Take Action
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
+          logs.map(
+            (log) => (
+              console.log(log),
+              (
+                <div key={log.id} className="log-row">
+                  <div className="log-user">{log.username}</div>
+                  <div className="log-score">{log.sus_score}</div>
+                  <div className="log-time">
+                    {new Date(log.added_at).toLocaleString()}
+                  </div>
+
+                  <div className="log-admin">
+                    {log.resolved ? log.resolver_username : "-"}
+                  </div>
+
+                  <div className="log-time">
+                    {log.resolved && log.resolved_at
+                      ? new Date(log.resolved_at).toLocaleString()
+                      : "-"}
+                  </div>
+
+                  <div className={`log-status ${log.resolved ? "yes" : "no"}`}>
+                    {log.resolved ? "Yes" : "No"}
+                  </div>
+                  <div className="log-actions">
+                    <button
+                      className="btn-view"
+                      onClick={() => navigate(`/replay/${log.match_id}`)}
+                    >
+                      View Game
+                    </button>
+                    {!log.resolved && (
+                      <button
+                        className="btn-action"
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setResolveError("");
+                        }}
+                      >
+                        Take Action
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            ),
+          )
         ) : (
           <div className="log-empty">
             <p>No suspicious activity logs found.</p>
@@ -227,4 +239,4 @@ const AdminLobby = () => {
   );
 };
 
-export default AdminLobby;
+export default AdminLogs;

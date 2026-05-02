@@ -1011,7 +1011,19 @@ async def get_unresolved_cheat_logs() -> list:
             ORDER  BY acl.sus_score DESC
             """
         )
-
+        
+async def get_all_cheat_logs() -> list:
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT acl.id, a.username, acl.match_id,
+                   acl.sus_score, acl.added_at, acl.user_id,acl.resolved, acl.resolved_by, acl.resolved_at, ad.username AS resolver_username
+            FROM   anti_cheat_log acl
+            JOIN   account        a ON a.id = acl.user_id
+            JOIN   account  ad ON ad.id = acl.resolved_by
+            ORDER  BY acl.sus_score DESC
+            """
+        )   
 
 async def resolve_cheat_log(
     log_id: uuid.UUID,
