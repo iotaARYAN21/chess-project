@@ -4,23 +4,139 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 4rem;
+    color:var(--blush);
+    position: relative;
     /* flex-direction: column; */
+}
+.board-column{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.player-tag{
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 15px 0;
+    color: var(--champagne);
+    width: 100%;
+}
+.black-player{
+    text-align: left;
+}
+.white-player{
+    text-align: right;
 }
 .controls{
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    width: 100%;
 }
 .controls> *{
     padding: 0.5rem;
-    border-radius: 5px;
-    width: 3rem;
-    margin: 2rem;
+    border-radius: 8px;
+    width: 5rem;
+    margin: 1rem;
     cursor: pointer;
+    background: linear-gradient(135deg, var(--cognac), var(--amber));
+    color: white;
+    border: none;
+    font-weight: bold;
 }
-#back-btn{
-    margin-left: 43%;
-    height: 50px;
-    width: 70px;
-    border-radius: 10px;
+#back-btn {
+    position: absolute;
+    top: 2.5rem;
+    left: 3rem;
+    height: 40px;
+    padding: 0 1.2rem;
+    border-radius: 8px;
     cursor: pointer;
+    background: transparent;
+    color: var(--champagne);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+#back-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--cognac);
+    transform: translateX(-4px); /* Cool hover effect that gently slides the button left */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.pgn-column {
+    width: 320px;
+    height: 520px; /* Matches roughly the height of the board */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin-bottom: 3rem;
+}
+
+.pgn-column h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--champagne);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.moves-container {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for moves */
+.moves-container::-webkit-scrollbar {
+    width: 6px;
+}
+.moves-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.move-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.move-number {
+    width: 40px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+}
+
+.move {
+    flex: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.move:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Highlight for the currently selected move */
+.move.active {
+    background: var(--cognac);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
