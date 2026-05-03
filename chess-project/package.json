@@ -10,14 +10,14 @@
     "preview": "vite preview",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
-
   },
   "dependencies": {
     "chess.js": "^1.4.0",
     "react": "^19.2.4",
     "react-chessboard": "^5.10.0",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2"
+    "react-router-dom": "^7.13.2",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

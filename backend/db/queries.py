@@ -272,6 +272,29 @@ async def get_user_stats_by_name(username: str):
             username,
         )
 
+
+async def get_rating_history(username: str) -> list:
+    """
+    Return per-game ELO history for a player from vw_player_rating_history.
+    Ordered by game_mode then ended_at so the frontend can split into series.
+    """
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT
+                game_mode,
+                player_result,
+                elo_before,
+                elo_shift,
+                elo_after,
+                ended_at
+            FROM vw_player_rating_history
+            WHERE username = $1
+            ORDER BY game_mode, ended_at ASC
+            """,
+            username,
+        )
+
 async def update_user_elo(
     user_id: uuid.UUID,
     game_mode_id: uuid.UUID,
@@ -1074,4 +1097,3 @@ try:
     import asyncpg
 except ImportError:
     pass  # type: ignore
-

@@ -9,7 +9,8 @@ from db.queries import (
     get_matches_by_game_mode,
      get_user_stats_by_name,
      get_all_user_matches,
-     get_match_by_id
+     get_match_by_id,
+     get_rating_history
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -95,5 +96,21 @@ async def get_match_pgn(match_id:str):
     import uuid
     match = await get_match_by_id(uuid.UUID(match_id)) # Uses existing query
     if not match:
-        raise HTTPException(status_codWe=404, detail="Match not found")
+        raise HTTPException(status_code=404, detail="Match not found")
     return {"pgn": match["final_pgn"]}
+
+@router.get("/{username}/rating-history")
+async def get_user_rating_history(username: str):
+    """Return per-game ELO history for all game modes, used to draw rating graphs."""
+    rows = await get_rating_history(username)
+    return [
+        {
+            "game_mode":     r["game_mode"],
+            "player_result": r["player_result"],
+            "elo_before":    r["elo_before"],
+            "elo_shift":     r["elo_shift"],
+            "elo_after":     r["elo_after"],
+            "ended_at":      r["ended_at"].isoformat() if r["ended_at"] else None,
+        }
+        for r in rows
+    ]
