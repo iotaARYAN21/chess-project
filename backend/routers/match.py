@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, WebSocke
 from http import HTTPStatus
 from pydantic import ValidationError
 import uuid
+import os
+import shutil
 import chess
 import chess.engine
 from datetime import datetime, timezone
@@ -220,20 +222,37 @@ async def execute_move(
 
 ############# for background task
 
+def resolve_stockfish_path():
+    path = shutil.which("stockfish")
+    if path:
+        return path
+
+    fallback = ["/usr/bin/stockfish", "/usr/games/stockfish"]
+    for p in fallback:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+
+    raise FileNotFoundError("Stockfish not found")
+
 async def handle_engine_move_task(
-    match_id:   uuid.UUID,
-    bot_id:     uuid.UUID,
-    fen:        str,
+    match_id: uuid.UUID,
+    bot_id: uuid.UUID,
+    fen: str,
     engine_cfg: EngineConfigModel,
 ):
     print(f"[engine] task started for match {match_id}")
     try:
-        print(f"[engine] opening stockfish...")
-        transport, engine = await chess.engine.popen_uci("/usr/bin/stockfish")
+        engine_path = resolve_stockfish_path()
+        print(f"[engine] using stockfish at: {engine_path}")
+
+        transport, engine = await chess.engine.popen_uci(engine_path)
         try:
             board = chess.Board(fen)
             print(f"[engine] playing move at depth {engine_cfg.depth}...")
-            play_result = await engine.play(board, chess.engine.Limit(depth=engine_cfg.depth))
+            play_result = await engine.play(
+                board,
+                chess.engine.Limit(depth=engine_cfg.depth)
+            )
             bot_uci = play_result.move.uci()
             print(f"[engine] stockfish played: {bot_uci}")
         finally:
@@ -242,13 +261,12 @@ async def handle_engine_move_task(
         played_at = datetime.now(timezone.utc)
         print(f"[engine] calling execute_move...")
         response, _, _ = await execute_move(match_id, bot_id, bot_uci, played_at)
-        print(f"[engine] execute_move done, broadcasting...")
 
+        print(f"[engine] broadcasting...")
         await manager.broadcast_to_match(str(match_id), {
             "type": "MOVE_MADE",
             "payload": response.model_dump(mode='json'),
         })
-        print(f"[engine] broadcast done")
 
     except Exception as e:
         print(f"[engine] FAILED: {type(e).__name__}: {e}")
@@ -256,7 +274,6 @@ async def handle_engine_move_task(
             "type": "ENGINE_ERROR",
             "payload": {"detail": str(e)},
         })
-
 
 ############ ENDPOINTS
 
