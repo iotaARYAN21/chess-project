@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './lobby.css';
 import { useNavigate } from 'react-router-dom';
+import { MdFlashOn, MdBolt, MdSchedule, MdSportsEsports } from 'react-icons/md';
 
 const FORMAT_TIME = (s) => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m`;
-const MODE_ICONS = { bullet: '🔫', blitz: '⚡', rapid: '⏱️', classical: '♟️' };
+const MODE_ICONS = {bullet: <MdFlashOn />,blitz: <MdBolt />,rapid: <MdSchedule />,classical: <MdSportsEsports />};
 
 function TimeControlCard({ mode_name, base_time, incr_time, disabled, onClick }) {
   const timeLabel = incr_time > 0
@@ -12,7 +13,7 @@ function TimeControlCard({ mode_name, base_time, incr_time, disabled, onClick })
 
   return (
     <div className={`game-card ${disabled ? 'game-card--disabled' : ''}`} onClick={disabled ? undefined : onClick}>
-      <span className="game-card__icon">{MODE_ICONS[mode_name] ?? '🎮'}</span>
+      <span className="game-card__icon">{MODE_ICONS[mode_name] ?? <MdSportsEsports />}</span>
       <h3 className="game-card__mode">{mode_name.toUpperCase()}</h3>
       <p className="game-card__time">{timeLabel}</p>
     </div>
