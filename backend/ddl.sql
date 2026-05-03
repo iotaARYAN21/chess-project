@@ -335,6 +335,215 @@ CREATE TABLE IF NOT EXISTS ANTI_CHEAT_LOG (
 	)
 );
 
+-- INDEXES
+
+-- Fast email-based login
+CREATE UNIQUE INDEX IF NOT EXISTS idx_player_account_email
+    ON PLAYER_ACCOUNT (EMAIL);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_admin_account_email
+    ON ADMIN_ACCOUNT (EMAIL);
+
+-- Username search / profile lookup
+CREATE UNIQUE INDEX IF NOT EXISTS idx_account_username
+    ON ACCOUNT (USERNAME);
+
+-- Active-account filter (e.g. block deactivated users from login)
+CREATE INDEX IF NOT EXISTS idx_account_is_active
+    ON ACCOUNT (IS_ACTIVE);
+
+-- "All games for player X" (history page) — one index per side
+CREATE INDEX IF NOT EXISTS idx_match_white_id
+    ON MATCH (WHITE_ID);
+
+CREATE INDEX IF NOT EXISTS idx_match_black_id
+    ON MATCH (BLACK_ID);
+
+-- Lobby list (active) / archive (completed)
+CREATE INDEX IF NOT EXISTS idx_match_status
+    ON MATCH (STATUS);
+
+-- Partial: only active games — tiny hot set, scanned constantly
+CREATE INDEX IF NOT EXISTS idx_match_active
+    ON MATCH (STARTED_AT DESC)
+    WHERE STATUS = 'active';
+
+-- Join MATCH → TIME_CONTROL (e.g. "all rapid games")
+CREATE INDEX IF NOT EXISTS idx_match_time_control_id
+    ON MATCH (TIME_CONTROL_ID);
+
+-- Recent-games feed ordered by start time
+CREATE INDEX IF NOT EXISTS idx_match_started_at
+    ON MATCH (STARTED_AT DESC);
+
+-- Composite: player + status — "active games for player X"
+CREATE INDEX IF NOT EXISTS idx_match_white_status
+    ON MATCH (WHITE_ID, STATUS);
+
+CREATE INDEX IF NOT EXISTS idx_match_black_status
+    ON MATCH (BLACK_ID, STATUS);
+
+-- "All entries for player X ordered by time" (graph query)
+CREATE INDEX IF NOT EXISTS idx_match_log_player_ended
+    ON MATCH_LOG (PLAYER_ID, ENDED_AT ASC);
+
+-- Join back to MATCH
+CREATE INDEX IF NOT EXISTS idx_match_log_match_id
+    ON MATCH_LOG (MATCH_ID);
+
+-- Cross-mode profile lookup (PK already covers both cols together;
+-- this standalone index covers WHERE USER_ID = ? alone)
+CREATE INDEX IF NOT EXISTS idx_user_stats_user_id
+    ON USER_STATS (USER_ID);
+
+-- Leaderboard: top ELO per game mode
+CREATE INDEX IF NOT EXISTS idx_user_stats_mode_elo
+    ON USER_STATS (GAME_MODE_ID, ELO DESC);
+
+-- Join: last game played by user
+CREATE INDEX IF NOT EXISTS idx_session_log_last_game
+    ON USER_SESSION_LOG (LAST_GAME_ID)
+    WHERE LAST_GAME_ID IS NOT NULL;
+
+-- Anti-quit enforcement: users who quit today
+CREATE INDEX IF NOT EXISTS idx_session_log_quits
+    ON USER_SESSION_LOG (N_QUITS_TODAY DESC)
+    WHERE N_QUITS_TODAY > 0;
+
+-- Matchmaking scan: open seeks for a given time-control
+CREATE INDEX IF NOT EXISTS idx_game_seek_open_tc
+    ON GAME_SEEK (TIME_CONTROL_ID, COLOR_PREFERENCE)
+    WHERE STATUS = 'open';
+
+-- Player's own seeks
+CREATE INDEX IF NOT EXISTS idx_game_seek_seeker
+    ON GAME_SEEK (SEEKER_ID, STATUS);
+
+-- Expiry janitor job
+CREATE INDEX IF NOT EXISTS idx_game_seek_expires_at
+    ON GAME_SEEK (EXPIRES_AT)
+    WHERE STATUS = 'open';
+
+
+-- "Friends of X" — PK covers USER1_ID lookups;
+-- need a separate index for the USER2_ID direction
+CREATE INDEX IF NOT EXISTS idx_friendship_user2
+    ON FRIENDSHIP (USER2_ID);
+
+
+-- "Who follows X?" — PK covers FOLLOWER_ID; need FOLLOWED_ID
+CREATE INDEX IF NOT EXISTS idx_follower_followed_id
+    ON FOLLOWER (FOLLOWED_ID);
+
+-- Inbox: pending requests TO a user
+CREATE INDEX IF NOT EXISTS idx_friend_request_to_user
+    ON FRIEND_REQUEST (TO_USER, STATUS);
+
+-- Sent: requests FROM a user
+CREATE INDEX IF NOT EXISTS idx_friend_request_from_user
+    ON FRIEND_REQUEST (FROM_USER, STATUS);
+
+-- "Is player X currently banned?" — checked on every login/move
+CREATE INDEX IF NOT EXISTS idx_ban_account_id
+    ON BAN (ACCOUNT_ID);
+
+-- Partial: only bans that haven't expired yet (small active set)
+CREATE INDEX IF NOT EXISTS idx_ban_active
+    ON BAN (ACCOUNT_ID, EXPIRES_AT)
+    WHERE EXPIRES_AT IS NULL;
+
+-- Admin: bans issued by a specific moderator
+CREATE INDEX IF NOT EXISTS idx_ban_banned_by
+    ON BAN (BANNED_BY)
+    WHERE BANNED_BY IS NOT NULL;
+
+-- "All flags for player X"
+CREATE INDEX IF NOT EXISTS idx_anti_cheat_user_id
+    ON ANTI_CHEAT_LOG (USER_ID);
+
+-- "All flags for match Y"
+CREATE INDEX IF NOT EXISTS idx_anti_cheat_match_id
+    ON ANTI_CHEAT_LOG (MATCH_ID);
+
+-- Admin review queue: unresolved flags by suspicion score
+CREATE INDEX IF NOT EXISTS idx_anti_cheat_unresolved
+    ON ANTI_CHEAT_LOG (SUS_SCORE DESC, ADDED_AT ASC)
+    WHERE RESOLVED = FALSE;
+
+-- Admin: resolved by which moderator
+CREATE INDEX IF NOT EXISTS idx_anti_cheat_resolved_by
+    ON ANTI_CHEAT_LOG (RESOLVED_BY)
+    WHERE RESOLVED_BY IS NOT NULL;
+
+-- Join TIME_CONTROL → GAME_MODE
+CREATE INDEX IF NOT EXISTS idx_time_control_game_mode_id
+    ON TIME_CONTROL (GAME_MODE_ID);
+
+
+-- VIEWS
+
+-- Purpose : drive a per-player, per-game-mode ELO line chart.
+CREATE OR REPLACE VIEW vw_player_rating_history AS
+SELECT
+    -- Identity
+    ml.player_id,
+    a.username,
+
+    -- Game context
+    ml.match_id,
+    gm.name                                         AS game_mode,
+    ml.player_side,
+
+    -- Opponent
+    CASE
+        WHEN ml.player_side = 'w' THEN m.black_id
+        ELSE m.white_id
+    END                                             AS opponent_id,
+
+    -- Result from this player's perspective
+    CASE
+        WHEN m.result = 'draw'                                               THEN 'draw'
+        WHEN (ml.player_side = 'w' AND m.result = 'white')
+          OR (ml.player_side = 'b' AND m.result = 'black')                  THEN 'win'
+        ELSE                                                                      'loss'
+    END                                             AS player_result,
+
+    -- ELO timeline (the three columns you bind to your chart)
+    ml.elo_before,
+    ml.elo_shift,
+    (ml.elo_before + ml.elo_shift)                  AS elo_after,
+
+    -- Timestamps
+    m.started_at,
+    ml.ended_at
+
+FROM match_log    ml
+JOIN match        m  ON m.id  = ml.match_id
+JOIN time_control tc ON tc.id = m.time_control_id
+JOIN game_mode    gm ON gm.id = tc.game_mode_id
+JOIN account      a  ON a.id  = ml.player_id
+-- Human players only (excludes engine rows from MATCH_LOG)
+WHERE EXISTS (
+    SELECT 1 FROM player_account WHERE id = ml.player_id
+);
+
+-- Purpose : current ELO snapshot for every player across all
+--           game modes — used by profile pages and leaderboards.
+CREATE OR REPLACE VIEW vw_player_current_ratings AS
+SELECT
+    us.user_id                              AS player_id,
+    a.username,
+    gm.name                                AS game_mode,
+    us.elo,
+    us.n_wins,
+    us.n_losses,
+    us.n_draws,
+    (us.n_wins + us.n_losses + us.n_draws) AS total_games
+FROM user_stats  us
+JOIN game_mode   gm ON gm.id = us.game_mode_id
+JOIN account     a  ON a.id  = us.user_id;
+
+
 -- drop table if exists ANTI_CHEAT_LOG;
 -- drop table if exists BAN;
 -- drop table if exists FRIEND_REQUEST;
@@ -355,5 +564,3 @@ CREATE TABLE IF NOT EXISTS ANTI_CHEAT_LOG (
 -- drop table if exists PLAYABLE_ACCOUNT;
 -- drop table if exists ACCOUNT;
 -- drop extension if exists "pgcrypto";
-
-	
