@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './lobby.css'
 import { useNavigate } from 'react-router-dom';
 function GameMode({id,title,subtitle,time,icon,onClick}){
@@ -14,14 +14,46 @@ function GameMode({id,title,subtitle,time,icon,onClick}){
 // NOTE: CREATION OF GAME MUST BE HANDLED HERE
 const Lobby = () => {
     const [loading,setLoading] = useState(false);
-    const [botUsername,setBotUsername] = useState('stockfish_16')
+    const [botUsername,setBotUsername] = useState('')
+    const [bots,setBots]=useState([])
+    const [gameModes,setGameModes]=useState([])
     const navigate = useNavigate()
-    const gameModes = [
-    { id: 'bullet', title: 'Bullet', subtitle: 'Speed is everything.', time: '1 + 0', icon: '⚡' },
-    { id: 'blitz', title: 'Blitz', subtitle: 'The expert standard.', time: '3 + 2', icon: '⏱️' },
-    { id: 'rapid', title: 'Rapid', subtitle: 'Precision & logic.', time: '10 + 0', icon: '🕒' },
-    {id: 'classical', title: 'Classical', subtitle: 'Deep strategy, no rush.', time: '30 + 0', icon: '♟️' },
-];
+    useEffect(()=>{
+        const fetchLobbyData = async()=>{
+            try{
+                const [modesResp,botsResp]= await Promise.all([
+                    fetch('http://localhost:8000/api/game-modes', {
+                        headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` }
+                    }),
+                    fetch('http://localhost:8000/api/engines', {
+                        headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` }
+                    })
+                ]);
+                if (modesResp.ok){
+                    const modesData = await modesResp.json();
+                    setGameModes(modesData)
+                }
+                if(botsResp.ok){
+                    const botsData = await botsResp.json();
+                    setBots(botsData)
+                    if(botsData.length>0){
+                        setBotUsername(botsData[0].username)
+                    }
+                }
+            }
+            catch(err){
+                console.error("Failed to fetch data ",err);
+            }
+            
+        }
+        fetchLobbyData();  
+    },[])
+//     const gameModes = [
+//     { id: 'bullet', title: 'Bullet', subtitle: 'Speed is everything.', time: '1 + 0', icon: '⚡' },
+//     { id: 'blitz', title: 'Blitz', subtitle: 'The expert standard.', time: '3 + 2', icon: '⏱️' },
+//     { id: 'rapid', title: 'Rapid', subtitle: 'Precision & logic.', time: '10 + 0', icon: '🕒' },
+//     {id: 'classical', title: 'Classical', subtitle: 'Deep strategy, no rush.', time: '30 + 0', icon: '♟️' },
+// ];
     const handleGameMode = async (game_id,game_time)=>{
         setLoading(true);
         // console.log('fdfds')
@@ -93,9 +125,14 @@ const Lobby = () => {
                         style={{ padding: '8px', borderRadius: '5px', cursor: 'pointer' }}
                         disabled={loading} // Prevent changing bot while fetching
                     >
-                        <option value="stockfish_16">stockfish_16</option>
+                        {
+                            bots.map((bot)=>(
+                                <option key={bot.id} value={bot.username}>{bot.username} (v{bot.version})</option>
+                            ))
+                        }
+                        {/* <option value="stockfish_16">stockfish_16</option>
                         <option value="komodo_14">komodo_14</option>
-                        <option value="GM_Magnus90">GM Magnus (Advanced)</option>
+                        <option value="GM_Magnus90">GM Magnus (Advanced)</option> */}
                     </select>
                 </div>
         </div>
@@ -104,11 +141,11 @@ const Lobby = () => {
             <GameMode 
             key={item.id} 
             id={item.id} 
-            title={item.title} 
-            subtitle={item.subtitle} 
-            time={item.time} 
-            icon={item.icon}
-            onClick={()=>handleGameMode(item.id,item.time)}
+            title={item.name} 
+            subtitle={item.description} 
+            time={item.time_string} 
+            // icon="♟️"
+            onClick={()=>handleGameMode(item.id,item.time_string)}
             />
         ))}
         </div>

@@ -85,7 +85,7 @@
 
 .match-result.win { color: #4CAF50; }
 .match-result.loss { color: #FF6B6B; }
-.match-result.draw { color: #aaa; }
+.match-result.draw { color: #f5f5f5; }
 
 /* Empty/Loading States */
 .no-matches, .archives-loading {

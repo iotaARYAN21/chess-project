@@ -73,9 +73,9 @@ const ReplayMatch = () => {
     }
     return (
         <div className="replay-div">
-            <button id='back-btn' onClick={()=>navigate('/dashboard',{
+            {/* <button id='back-btn' onClick={()=>navigate('/dashboard',{
                 state:{activeTab:'archives'}
-            })}>← Back</button>
+            })}>← Back</button> */}
             <div className="board-column">
                 <div className="player-tag black-player"> ♔ {black}</div>
                 <div style={{ width: '500px', margin: 'auto' }}>

@@ -43,7 +43,7 @@
     border: none;
     font-weight: bold;
 }
-#back-btn {
+/* #back-btn {
     position: absolute;
     top: 2.5rem;
     left: 3rem;
@@ -63,9 +63,9 @@
 #back-btn:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--cognac);
-    transform: translateX(-4px); /* Cool hover effect that gently slides the button left */
+    transform: translateX(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
+} */
 .pgn-column {
     width: 320px;
     height: 520px; /* Matches roughly the height of the board */

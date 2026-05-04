@@ -6,7 +6,7 @@ const Archives = () => {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const username = localStorage.getItem('username') || 'murali';
+    const username = localStorage.getItem('username');
 
     useEffect(() => {
         fetch(`http://localhost:8000/users/${username}/matches`,{
@@ -18,8 +18,10 @@ const Archives = () => {
             .then(res => res.json())
             .then(data => {
                 // Sort matches by ID descending to ensure the newest matches appear first
+                console.log("data: ",data)
                 const sortedMatches = data.sort((a, b) => b.id - a.id);
                 setMatches(sortedMatches);
+                console.log("sorted data: ",sortedMatches)
                 setLoading(false);
             })
             .catch(err => {
@@ -49,7 +51,7 @@ const Archives = () => {
                             <span>{match.black_username}</span>
                         </div>
                         <div className={`match-result ${match.result.toLowerCase()}`}>
-                            {match.result}
+                            {`${match.result==='draw' ? "Draw" : match.result==='white'?`Winner: ${match.white_username}` : `Winner: ${match.black_username}`}`}
                         </div>
                     </div>
                 ))}
