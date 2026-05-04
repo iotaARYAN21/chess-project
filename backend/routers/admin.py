@@ -8,7 +8,6 @@ from db.queries import (
     get_active_bans,
     get_all_bans,
     is_banned,
-    lift_ban,
     log_suspicious_activity,
     get_unresolved_cheat_logs,
     resolve_cheat_log,

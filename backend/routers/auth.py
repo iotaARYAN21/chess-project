@@ -1,6 +1,6 @@
 from fastapi import APIRouter,HTTPException
 from pydantic import BaseModel
-from db.queries import get_player_by_email,get_admin_by_email
+from db.queries import get_player_by_email,get_admin_by_email,get_ban_user_if_present,lift_ban_user,lift_ban_admin
 from utils import create_access_token,decode_token
 
 router = APIRouter(prefix="/auth",tags=["auth"])
@@ -19,7 +19,15 @@ async def login(data:LoginRequest):
 
         if not admin or admin["password_hash"]!=data.pwd:
             raise HTTPException(status_code=400,detail="Invalid email or password")
-
+        
+        if admin["is_banned"]:
+            ban = await get_ban_user_if_present(admin["id"])
+            
+            if ban:
+                raise HTTPException(status_code=403,detail="Admin account is banned until {}".format(ban["expires_at"] if ban["expires_at"] else "the end of time!"))
+                
+            await lift_ban_admin(admin["id"])
+            
         # JWT payload
         token_data = {
             "sub": str(admin["id"]),
@@ -38,6 +46,14 @@ async def login(data:LoginRequest):
             "role":"sysadmin"
         }
 
+    if player["is_banned"]:
+        ban = await get_ban_user_if_present(player["id"])
+        
+        if ban:
+            raise HTTPException(status_code=403,detail="Account is banned until {}".format(ban["expires_at"] if ban["expires_at"] else "the end of time!"))
+            
+        await lift_ban_user(player["id"])
+        
     # JWT payload
     token_data = {
         "sub": str(player["id"]),

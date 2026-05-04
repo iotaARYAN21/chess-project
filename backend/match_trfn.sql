@@ -229,5 +229,9 @@ BEGIN
         RESOLVED_AT = NOW()
     WHERE id = p_log_id;
 
+    -- 4. If a ban was issued, immediately update the player's account status
+    UPDATE PLAYER_ACCOUNT
+    SET IS_BANNED = TRUE
+    WHERE id = p_user_id AND p_ban_type <> 'none';
 END;
 $$;

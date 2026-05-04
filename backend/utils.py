@@ -1,3 +1,5 @@
+from re import sub
+
 import jwt
 import os
 from fastapi import Depends, HTTPException, status
@@ -9,6 +11,9 @@ from fastapi.security import (
 from dotenv import load_dotenv, find_dotenv
 from typing import Tuple
 from enum import Enum
+
+from sqlalchemy import UUID
+from db.queries import get_account_by_username, get_admin_by_id, get_player_by_email, get_admin_by_email, get_ban_user_if_present, get_account_by_id, get_player_by_id, lift_ban_admin, lift_ban_user
 
 load_dotenv(find_dotenv())
 
@@ -107,9 +112,17 @@ class AdminChecker:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        id = payload.get("sub")
         sub = payload.get("username")
         role = payload.get("role")
         admin_level = payload.get("admin_level")
+        
+        if (not id) or (not isinstance(id, str)):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload: missing `sub` field",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         
         if not admin_level:
             raise HTTPException(
@@ -154,9 +167,36 @@ class AdminChecker:
                 detail=f"Higher level privileges required",
             )
             
+        # try:
+        #     uuid_id = UUID(id)
+        # except ValueError:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_401_UNAUTHORIZED,
+        #         detail="Invalid token payload: `sub` value is not a valid UUID",
+        #         headers={"WWW-Authenticate": "Bearer"},
+        #     )
+            
+        # Check if user is banned 
+        acc = await get_admin_by_id(id)
+
+        if not acc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
+        if acc["is_banned"]:
+            ban = await get_ban_user_if_present(acc["id"])
+            
+            if ban:
+                raise HTTPException(status_code=403,detail="Account is banned until {}".format(ban["expires_at"] if ban["expires_at"] else "the end of time!"))
+
+            await lift_ban_admin(acc["id"])        
+                
         return payload
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(get_cred),
 ) -> str:
     """
@@ -220,6 +260,42 @@ def get_current_user(
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    id = payload.get("sub")
+    
+    if not id or not isinstance(id, str):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload: missing `sub` field",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    # try:
+    #     uuid_id = UUID(id)
+    # except ValueError:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_401_UNAUTHORIZED,
+    #             detail="Invalid token payload: `sub` value is not a valid UUID",
+    #             headers={"WWW-Authenticate": "Bearer"},
+    #         )
+            
+    # Check if user is banned 
+    acc = await get_player_by_id(id)
+    
+    if not acc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    if acc["is_banned"]:
+        ban = await get_ban_user_if_present(acc["id"])
+        
+        if ban:
+            raise HTTPException(status_code=403,detail="Account is banned until {}".format(ban["expires_at"] if ban["expires_at"] else "the end of time!"))
+
+        await lift_ban_user(acc["id"])
 
     return sub
 

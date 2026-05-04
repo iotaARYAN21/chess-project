@@ -95,7 +95,7 @@ async def get_player_by_email(email: str) -> Optional[asyncpg.Record]:
         return await conn.fetchrow(
             """
             SELECT a.id, a.username, a.is_active,
-                   pa.email, pa.password_hash
+                   pa.email, pa.password_hash, pa.is_banned
             FROM   player_account pa
             JOIN   account        a  ON a.id = pa.id
             WHERE  pa.email = $1
@@ -103,18 +103,41 @@ async def get_player_by_email(email: str) -> Optional[asyncpg.Record]:
             email,
         )
 
+async def get_player_by_id(player_id: uuid.UUID) -> Optional[asyncpg.Record]:
+    """Look up a player by ID."""
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT pa.id, pa.is_banned, pa.email
+            FROM   player_account pa
+            WHERE  pa.id = $1
+            """,
+            player_id,
+        )
+        
 async def get_admin_by_email(email: str) -> Optional[asyncpg.Record]:
     """Look up a player by name (used during login)."""
     async with get_pool().acquire() as conn:
         return await conn.fetchrow(
             """
             SELECT a.id, a.username, a.is_active,
-                   ad.admin_level,ad.email, ad.password_hash
+                   ad.admin_level,ad.email, ad.password_hash, ad.is_banned
             FROM   admin_account ad
             JOIN   account  a  ON a.id = ad.id
             WHERE  ad.email = $1
             """,
             email,
+        )
+async def get_admin_by_id(admin_id: uuid.UUID) -> Optional[asyncpg.Record]: 
+    """Look up an admin by ID."""
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT ad.id, ad.email, ad.admin_level, ad.is_banned
+            FROM   admin_account ad
+            WHERE  ad.id = $1
+            """,
+            admin_id,
         )
 
 # ===========================================================================
@@ -990,12 +1013,34 @@ async def get_all_bans() -> list:
             """
         )
 
-async def lift_ban(ban_id: uuid.UUID) -> None:
+async def lift_ban_user(user_id: uuid.UUID) -> None:
     async with get_pool().acquire() as conn:
         await conn.execute(
-            "UPDATE ban SET expires_at = NOW() WHERE id = $1", ban_id
+            """UPDATE player_account SET is_banned = FALSE WHERE id = $1""",
+            user_id,
+        )
+        
+async def lift_ban_admin(user_id: uuid.UUID) -> None:
+    async with get_pool().acquire() as conn:
+        await conn.execute(
+            """UPDATE admin_account SET is_banned = FALSE WHERE id = $1""",
+            user_id,
         )
 
+async def get_ban_user_if_present(user_id: uuid.UUID) -> Optional[asyncpg.Record]:
+    async with get_pool().acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT b.*
+            FROM   ban b
+            where (b.account_id = $1 AND (b.ban_type = 'permanent' OR b.expires_at > NOW()))
+            ORDER  BY b.created_at DESC
+            LIMIT 1
+            """,
+            user_id,
+        )
+# can create index on ban(account_id) to speed this up if needed, but should be fast enough as is since we only fetch one row and the number of active bans per user should be very low. 
+  
 # ===========================================================================
 # ANTI-CHEAT LOG
 # ===========================================================================
