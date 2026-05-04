@@ -978,6 +978,23 @@ async def is_banned(account_id: uuid.UUID) -> bool:
         )
         return row is not None
 
+async def get_all_bans() -> list:
+    async with get_pool().acquire() as conn:
+        return await conn.fetch(
+            """
+            SELECT b.*, a.username, ad.username AS admin_username
+            FROM   ban b
+            JOIN   account a ON a.id = b.account_id
+            JOIN   account ad ON ad.id = b.banned_by
+            ORDER  BY b.created_at DESC
+            """
+        )
+
+async def lift_ban(ban_id: uuid.UUID) -> None:
+    async with get_pool().acquire() as conn:
+        await conn.execute(
+            "UPDATE ban SET expires_at = NOW() WHERE id = $1", ban_id
+        )
 
 # ===========================================================================
 # ANTI-CHEAT LOG
@@ -1020,7 +1037,7 @@ async def get_all_cheat_logs() -> list:
                    acl.sus_score, acl.added_at, acl.user_id,acl.resolved, acl.resolved_by, acl.resolved_at, ad.username AS resolver_username
             FROM   anti_cheat_log acl
             JOIN   account        a ON a.id = acl.user_id
-            JOIN   account  ad ON ad.id = acl.resolved_by
+            LEFT JOIN   account  ad ON ad.id = acl.resolved_by
             ORDER  BY acl.sus_score DESC
             """
         )   

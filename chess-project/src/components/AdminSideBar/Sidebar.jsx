@@ -3,7 +3,8 @@ import './sidebar.css'
 const Sidebar = ({activeTab,setActiveTab}) => {
   const navItems= [
     { id: 'Pending_Logs', label: 'Pending Logs', icon: 'grid-icon' },
-    { id: 'All_Logs', label: 'All Logs', icon: 'grid-icon' },
+    { id: 'All_Logs', label: 'Logs', icon: 'grid-icon' },
+    { id: 'All_Bans', label: 'Bans', icon: 'grid-icon' },
     ];
 
     const username = localStorage.getItem('username');

@@ -34,6 +34,7 @@ async def login(data:LoginRequest):
             "access_token":access_token,
             "token-type":"bearer",
             "username":admin["username"],
+            "admin_level":admin["admin_level"],
             "role":"sysadmin"
         }
 

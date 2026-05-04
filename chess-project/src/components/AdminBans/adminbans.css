@@ -25,44 +25,48 @@
   gap: 0.5rem;
 }
 
-.log-header, 
+.log-header {
+  display: grid;
+    grid-template-columns: 1.2fr 0.8fr 1.5fr 1.2fr 1.5fr 0.8fr 1.8fr;
+  padding: 0.8rem 1rem;
+  
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  
+  color: rgba(255,255,255,0.5);
+}
+
+.log-admin {
+  color: var(--champagne);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Row - Updated to 5 columns */
 .log-row {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1.5fr 2fr;  /* was: repeat(4, 1fr) */
+  /* Must match the header's column definition exactly */
+  grid-template-columns: 1.2fr 0.8fr 1.5fr 1.2fr 1.5fr 0.8fr 1.8fr;
   align-items: center;
-  gap: 1rem;
+
   padding: 1rem;
-  width: 100%;
-  text-align: left;
-}
-
-.log-header {
-  padding: 0.5rem 1rem 0.5rem 1.25rem; /* tweak left padding to nudge labels right */
-  opacity: 0.5;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-/* The Empty State Rectangle */
-.log-empty {
-  grid-column: 1 / 5; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 3rem;
-  margin-top: 0.5rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
-  font-style: italic;
-  width: 100%; 
+
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.06),
+    rgba(195, 149, 91, 0.10)
+  );
+
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.2s ease;
 }
 
 /* Action Container alignment */
 .log-actions {
   display: flex;
-  gap: 12px;
+  gap: 12px;     /* Adjust this value (e.g., 8px, 12px, 1rem) for more or less space */
   justify-content: flex-start;
   align-items: center;
 }
@@ -103,15 +107,32 @@
   color: #ff5252; /* red */
 }
 
-.btn-view, .btn-action {
-  padding: 0.4rem 0.6rem;
-  font-size: 0.7rem;
-  white-space: nowrap;
+.btn-view {
+  background: transparent;
+  border: 1px solid var(--champagne) !important;
+  color: var(--champagne);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn-view:hover {
   background: var(--champagne);
   color: var(--espresso);
+}
+
+.btn-action {
+  background: var(--cognac);
+  color: var(--espresso);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 /* Modal Styling */
@@ -180,4 +201,20 @@
 
 .modal-group textarea::placeholder {
   color: rgba(255, 255, 255, 0.3);
+}
+
+.log-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 237, 240, 0.03),
+    rgba(195, 149, 91, 0.05)
+  );
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
 }

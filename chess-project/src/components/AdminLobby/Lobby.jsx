@@ -114,8 +114,8 @@ const AdminLobby = () => {
   return (
     <div className="lobby">
       <div className="lobby-intro">
-        <h1>Cheat Logs</h1>
-        <p>Monitor suspicious player activity</p>
+        <h1>Pending Cheat Logs</h1>
+        <p>Monitor pending suspicious player activity</p>
       </div>
 
       {loading && <p>Loading...</p>}
@@ -157,6 +157,13 @@ const AdminLobby = () => {
                     Take Action
                   </button>
                 )}
+                {
+                  log.resolved && (
+                    <span style={{ color: "green", fontWeight: "bold" }}>
+                      Resolved
+                    </span>
+                  )
+                }
               </div>
             </div>
           ))

@@ -29,6 +29,7 @@ const Login = () => {
       localStorage.setItem('username', data.username) 
       localStorage.setItem('userId',data.user_id)
       localStorage.setItem('role', data.role)
+      localStorage.setItem('admin_level', data.admin_level || 'none')
 
       if (data.role === 'sysadmin') {
         console.log('Navigating To Admin Page')

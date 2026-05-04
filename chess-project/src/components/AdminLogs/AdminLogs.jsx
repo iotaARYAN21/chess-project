@@ -104,8 +104,8 @@ const AdminLogs = () => {
   return (
     <div className="lobby">
       <div className="lobby-intro">
-        <h1>Cheat Logs</h1>
-        <p>Monitor suspicious player activity</p>
+        <h1>All Cheat Logs</h1>
+        <p>Monitor all suspicious player activity</p>
       </div>
 
       {loading && <p>Loading...</p>}
