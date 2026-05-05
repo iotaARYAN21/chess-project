@@ -178,3 +178,54 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- ==========================================
+-- 4. INTERFACE: Timeout handler
+-- ==========================================
+
+CREATE OR REPLACE FUNCTION fn_handle_timeout(
+    p_match_id        UUID,
+    p_move_number     INT,         
+    p_white_ms        INT,          -- clamped white clock  (0 for the loser)
+    p_black_ms        INT,          -- clamped black clock  (0 for the loser)
+    p_result          TEXT,         
+    p_ended_at        TIMESTAMPTZ,
+    p_white_elo_shift INT,
+    p_black_elo_shift INT
+) RETURNS VOID AS $$
+DECLARE
+    v_fen TEXT;
+BEGIN
+    -- 1. Clamp clocks only
+    -- FEN, turn_started_at, move_number and move_history unchanged
+    UPDATE match_state
+    SET
+        white_time_remaining_ms = p_white_ms,
+        black_time_remaining_ms = p_black_ms
+    WHERE match_id   = p_match_id AND move_number = p_move_number;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'CONCURRENCY_ERROR: match_state for % has changed (move_number mismatch or already ended).',
+            p_match_id;
+    END IF;
+
+    -- 2. Snapshot the current FEN for match
+    SELECT fen INTO v_fen
+    FROM   match_state
+    WHERE  match_id = p_match_id;
+
+    -- 3. Complete the match 
+    -- This UPDATE fires trg_on_match_completion (BEFORE),
+    UPDATE match
+    SET
+        status          = 'completed',
+        result          = p_result,
+        ended_at        = p_ended_at,
+        white_elo_shift = p_white_elo_shift,
+        black_elo_shift = p_black_elo_shift,
+        final_fen       = v_fen
+    WHERE  id = p_match_id;
+END;
+$$ LANGUAGE plpgsql;
